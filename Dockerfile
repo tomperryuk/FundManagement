@@ -12,8 +12,8 @@ WORKDIR /app
 ENV NODE_ENV=production
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
-COPY server.mjs ./
+COPY server.mjs decision-store.mjs start.sh ./
+COPY src/decisionCatalogue.js src/designData.js src/orgModel.js src/marketMaking.js ./src/
 COPY --from=build /app/dist ./dist
-USER node
 EXPOSE 8080
-CMD ["node", "server.mjs"]
+CMD ["sh", "start.sh"]

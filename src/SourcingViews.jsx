@@ -15,13 +15,15 @@ function NodeChip({ id }) {
 // ───────────────────────── Options ─────────────────────────
 
 // Weights and the highlighted component survive moving between the sub-pages.
-let savedWeights = Object.fromEntries(criteria.map((c) => [c.id, c.weight]))
+const defaultWeights = Object.fromEntries(criteria.map(c => [c.id, c.weight]))
+let savedWeights = { ...defaultWeights }
+try { const stored = JSON.parse(localStorage.getItem('fpb-sourcing-weights')); if (stored && criteria.every(c => Number.isInteger(stored[c.id]) && stored[c.id] >= 0 && stored[c.id] <= 5)) savedWeights = stored } catch {}
 let savedFocus = null
 
 export function Options({ part } = {}) {
   const show = (k) => !part || part === k
   const [weights, setWeightsState] = useState(savedWeights)
-  const setWeights = (w) => { savedWeights = w; setWeightsState(w) }
+  const setWeights = (w) => { savedWeights = w; setWeightsState(w); try { localStorage.setItem('fpb-sourcing-weights', JSON.stringify(w)) } catch {} }
   const [domain, setDomain] = useState('all')
 
   const ranked = useMemo(() => {
@@ -52,6 +54,7 @@ export function Options({ part } = {}) {
       </>)}
 
       {show('strategies') && (<>
+<p className="small muted">Your comparison weights are saved in this browser. Rankings are exploratory; agreement is recorded separately in the shared decision register. <button className="link" onClick={() => setWeights({ ...defaultWeights })}>Reset weights</button></p>
 <div className="weights">
         {criteria.map((c) => (
           <label key={c.id} htmlFor={'w-' + c.id}>
@@ -91,8 +94,8 @@ export function Options({ part } = {}) {
         {counts.map(([p, n]) => <span key={p} className={'path p-' + p.toLowerCase()}>{n} {p}</span>)}
       </div>
       <div className="chips">
-        <button className={'chip' + (domain === 'all' ? ' on' : '')} onClick={() => setDomain('all')}>All components</button>
-        {domainOrder.map((k) => <button key={k} className={'chip' + (domain === k ? ' on' : '')} onClick={() => setDomain(k)}>{domains[k].name}</button>)}
+        <button className={'chip' + (domain === 'all' ? ' on' : '')} aria-pressed={domain === 'all'} onClick={() => setDomain('all')}>All components</button>
+        {domainOrder.map((k) => <button key={k} className={'chip' + (domain === k ? ' on' : '')} aria-pressed={domain === k} onClick={() => setDomain(k)}>{domains[k].name}</button>)}
       </div>
       <div className="tbl-wrap">
         <table className={'tbl matrix hl-' + top.column}>
@@ -174,8 +177,8 @@ export function Stack({ part } = {}) {
 
       {show('layers') && part && (
         <div className="chips layer-chips">
-          {techLayers.map(([id, name]) => <button key={id} className={'chip' + (layer === id ? ' on' : '')} onClick={() => setLayer(id)}>{name}</button>)}
-          <button className={'chip' + (layer === 'all' ? ' on' : '')} onClick={() => setLayer('all')}>All layers</button>
+          {techLayers.map(([id, name]) => <button key={id} className={'chip' + (layer === id ? ' on' : '')} aria-pressed={layer === id} onClick={() => setLayer(id)}>{name}</button>)}
+          <button className={'chip' + (layer === 'all' ? ' on' : '')} aria-pressed={layer === 'all'} onClick={() => setLayer('all')}>All layers</button>
         </div>
       )}
       {show('layers') && techLayers.filter(([id]) => layer === 'all' || layer === id).map(([id, name, desc, items]) => (

@@ -5,6 +5,7 @@ import {
   dataDomains, datasets, servingLayers, techLandscape,
 } from './dataArchitecture.js'
 import { AltDataSection, SecMasterSection } from './DataDeepDives.jsx'
+import { datasetVendorGuidance } from './datasetVendors.js'
 
 const byId = Object.fromEntries(datasets.map((d) => [d.id, d]))
 const jump = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -12,6 +13,19 @@ const jump = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'sm
 function NodeChip({ id }) {
   const n = nodeById[id]
   return <a className="node-chip" href={`#/node/${id}`} style={{ '--c': domains[n.domain].color }}>{n.label}</a>
+}
+
+function VendorGuidance({ dataset }) {
+  const plan = datasetVendorGuidance[dataset.id]
+  return <section className="dataset-vendors" aria-labelledby={`vendors-${dataset.id}`}>
+    <header><h4 id={`vendors-${dataset.id}`}>Key providers & recommended approach</h4><span>{plan.type}</span></header>
+    <div className="dataset-recommendation"><b>Recommendation</b><p>{plan.recommendation}</p></div>
+    <div className="dataset-providers">{plan.providers.map(provider => <article key={provider.name}>
+      <h5>{provider.url ? <a href={provider.url} target="_blank" rel="noreferrer">{provider.name} ↗</a> : provider.name}</h5>
+      <p>{provider.role}</p>
+    </article>)}</div>
+    <dl className="dataset-selection"><div><dt>Selection owner</dt><dd>{plan.owner}</dd></div><div><dt>Before selection</dt><dd>{plan.gate}</dd></div><div><dt>Current delivery assumption</dt><dd>{dataset.delivery}. Confirm the exact product, interface and licence before design sign-off.</dd></div></dl>
+  </section>
 }
 
 export default function DataArchitecture({ part, dataset } = {}) {
@@ -134,10 +148,11 @@ export default function DataArchitecture({ part, dataset } = {}) {
       {show('datasets') && (<>
 <section id="da-datasets" className="da-sec">
         {!part && <h3 className="sec-title">Key datasets</h3>}
+        <p className="muted small">Each dataset includes a provider shortlist, recommended approach and selection owner. Recommendations reflect this reference design; validate current contracts, portfolio coverage, point-in-time history, usage rights, integration and total cost before purchase. Public product descriptions checked 17 Oct 2026; links appear beside each provider.</p>
         <div className="chips">
-          <button className={'chip' + (domain === 'all' ? ' on' : '')} onClick={() => setDomain('all')}>All</button>
+          <button className={'chip' + (domain === 'all' ? ' on' : '')} aria-pressed={domain === 'all'} onClick={() => setDomain('all')}>All</button>
           {Object.entries(dataDomains).map(([k, v]) => (
-            <button key={k} className={'chip' + (domain === k ? ' on' : '')} onClick={() => setDomain(k)}>{v}</button>
+            <button key={k} className={'chip' + (domain === k ? ' on' : '')} aria-pressed={domain === k} onClick={() => setDomain(k)}>{v}</button>
           ))}
         </div>
         <div className="ds-layout">
@@ -163,6 +178,8 @@ export default function DataArchitecture({ part, dataset } = {}) {
               <div><dt>Sensitivity</dt><dd>{d.sensitivity}</dd></div>
               <div><dt>Retention</dt><dd>{d.retention}</dd></div>
             </dl>
+
+            <VendorGuidance dataset={d} />
 
             <h4>Where it lives</h4>
             <table className="tbl"><tbody>{d.storage.map(([tier, tech, why]) => <tr key={tier + tech}><th>{tier}</th><td><b>{tech}</b><br /><span className="muted small">{why}</span></td></tr>)}</tbody></table>
@@ -191,9 +208,6 @@ export default function DataArchitecture({ part, dataset } = {}) {
               </div>
             </div>
 
-            <h4 className="gap">Data vendors</h4>
-            <div className="examples">{d.vendors.map((v) => <span key={v} className="tag-plain">{v}</span>)}</div>
-            <p className="muted small">Delivery: {d.delivery}</p>
             {['instruments', 'corpactions', 'entities', 'calendars'].includes(d.id) && <a className="primary-link as-btn" href="#/secmaster">Read the security master deep dive →</a>}
             {d.id === 'altdata' && <a className="primary-link as-btn" href="#/altdata">Read the alternative data deep dive →</a>}
           </article>
@@ -248,7 +262,7 @@ export default function DataArchitecture({ part, dataset } = {}) {
                 <tr key={x.id}>
                   <th><button className="link" onClick={() => pick(x.id)}>{x.name}</button></th>
                   <td className="muted">{dataDomains[x.domain]}</td>
-                  <td>{x.vendors.join(', ')}</td>
+                  <td>{datasetVendorGuidance[x.id].providers.map(provider => provider.name).join(', ')}<br /><button className="link" onClick={() => pick(x.id)}>Recommendation & selection checks →</button></td>
                   <td className="muted">{x.delivery}</td>
                   <td>{x.storage.map((s) => s[1]).join('; ')}</td>
                 </tr>

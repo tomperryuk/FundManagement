@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react'
 import App from './App.jsx'
+import { ChoiceProvider } from './choices.js'
 
 // Sign-in is enforced by server.mjs on the deployed site. Local development
 // (`npm run dev`) and local previews (`--mode preview`) skip the check; every
 // other build keeps it, so a missing flag fails closed.
 const AUTH_REQUIRED = import.meta.env.PROD && import.meta.env.MODE !== 'preview'
 
-export default AUTH_REQUIRED ? AccountAccess : App
+export default function ProtectedBlueprint() {
+  return AUTH_REQUIRED ? <AccountAccess /> : <ChoiceProvider><App /></ChoiceProvider>
+}
 
 function AccountAccess() {
   const [account, setAccount] = useState(null)
@@ -58,6 +61,6 @@ function AccountAccess() {
       <span>Private access · {account.email}</span>
       <form method="post" action="/auth/logout"><button type="submit">Sign out</button></form>
     </div>
-    <App />
+    <ChoiceProvider><App /></ChoiceProvider>
   </>
 }

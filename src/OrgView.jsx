@@ -117,7 +117,7 @@ export default function OrgView({ part = 'structure' }) {
 
   return (
     <div className="org">
-      <p className="muted">Organisation decisions with options and trade-offs. Choices are saved in this browser, like the component decisions.</p>
+      <p className="muted">Organisation decisions with options and trade-offs. Selections, rationale and history are shared between the permitted reviewers.</p>
       {orgDecisions.map((d, i) => (
         <DecisionCard key={d.id} d={d} n={i + 1} anchor={'decision-' + d.id} chosen={choices[d.id]} choose={choose} />
       ))}

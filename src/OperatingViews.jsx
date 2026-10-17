@@ -3,6 +3,7 @@ import { nodeById, domains } from './systemData.js'
 import {
   strategyGroups, profile, pillars, groupNeeds, reviewChanges, openQuestions,
   phases, lifecycle, dayTimeline, assetVariations, principleGroups, principles, riskPlatform,
+  strategyLifecycleProfiles, successMetricTiers, lifecycleScorecards,
 } from './operatingModel.js'
 
 function NodeChip({ id }) {
@@ -135,7 +136,7 @@ export function Lifecycle({ part } = {}) {
             <ol>
               {lifecycle.map((x, idx) => x.phase === p && (
                 <li key={x.step}>
-                  <button className={idx === i ? 'on' : idx < i ? 'done' : ''} onClick={() => setI(idx)}>
+                  <button className={idx === i ? 'on' : idx < i ? 'done' : ''} aria-pressed={idx === i} onClick={() => setI(idx)}>
                     <span className="n">{idx + 1}</span>{x.step}
                   </button>
                 </li>
@@ -179,12 +180,23 @@ export function Lifecycle({ part } = {}) {
 
         <div className="lc-vars">
           <h4>By strategy group</h4>
-          <div className="seg" role="tablist">
+          <p className="muted small">The selected group keeps the same controlled lifecycle, but changes its research evidence, risk units, execution method and operational end state. These are reference prompts to validate with each team.</p>
+          <div className="seg" role="group" aria-label="Strategy group">
             {Object.entries(strategyGroups).map(([k, v]) => (
-              <button key={k} role="tab" aria-selected={group === k} className={group === k ? 'on' : ''} onClick={() => setGroup(k)}>{v}</button>
+              <button key={k} aria-pressed={group === k} className={group === k ? 'on' : ''} onClick={() => setGroup(k)}>{v}</button>
             ))}
           </div>
-          <p className="var-text">{s.variations[group]}</p>
+          <div className="strategy-profile">
+            <div className="strategy-intro">
+              <div><p className="eyebrow">{strategyGroups[group]} · current stage: {s.phase}</p><p>{strategyLifecycleProfiles[group].aim}</p></div>
+              <div><h5>At this stage</h5><p>{s.variations[group]}</p></div>
+            </div>
+            <h5>What matters across the lifecycle</h5>
+            <div className="strategy-focus">
+              {strategyLifecycleProfiles[group].focus.map(([label, text]) => <div key={label}><b>{label}</b><p>{text}</p></div>)}
+            </div>
+            <div className="strategy-evidence"><b>Evidence of a good outcome</b><p>{strategyLifecycleProfiles[group].keyEvidence}</p></div>
+          </div>
         </div>
 
         <div className="row">
@@ -223,8 +235,38 @@ export function Lifecycle({ part } = {}) {
         </div>
       </section>
       </>)}
+
+      {show('metrics') && <SuccessMetrics />}
     </section>
   )
+}
+
+function SuccessMetrics() {
+  return <section className="success-metrics">
+    <p className="eyebrow">Outcome and service scorecard</p>
+    <h3 className="sec-title">A hierarchy across business and technology</h3>
+    <p className="muted">Use one scorecard across research, trading, operations, data delivery and technology delivery. Start with firm outcomes, trace them through completed business states, then use operational, data and technology measures to explain the result. Agree baselines and thresholds by strategy, asset class, fund, market calendar and cut-off; these are proposals, not approved targets.</p>
+    <div className="metric-tiers">
+      {successMetricTiers.map((x) => <article className="metric-tier" key={x.tier}>
+        <span className="metric-tier-number">{x.tier}</span>
+        <div><h4>{x.name}</h4><p>{x.purpose}</p><dl><div><dt>Accountable</dt><dd>{x.owner}</dd></div><div><dt>Review rhythm</dt><dd>{x.cadence}</dd></div></dl></div>
+        <div><h5>Useful indicators</h5><p>{x.indicators}</p><h5>Good end state</h5><p>{x.endState}</p></div>
+      </article>)}
+    </div>
+
+    <h3 className="sec-title">Cross-business scorecards and end states</h3>
+    <p className="muted small">The scorecards cover the research, trading, operations and valuation lifecycle, plus delivery of the capabilities that support it. Instrument hand-offs with a stable business ID and event timestamps. Count each eligible object once, separate expected exclusions, and report final states alongside unresolved exceptions. Do not hide a control failure by improving an average latency or completion percentage.</p>
+    <div className="scorecards">
+      {lifecycleScorecards.map((x, i) => <article className="scorecard" key={x.name}>
+        <div className="scorecard-title"><span>{String(i + 1).padStart(2, '0')}</span><h4>{x.name}</h4></div>
+        <dl><div><dt>Accountable outcome owner</dt><dd>{x.accountable}</dd></div><div><dt>Delivery / contributing owners</dt><dd>{x.delivery}</dd></div><div><dt>Candidate measures</dt><dd>{x.measure}</dd></div><div><dt>Required end state</dt><dd>{x.end}</dd></div></dl>
+      </article>)}
+    </div>
+
+    <aside className="metric-ownership"><h4>Ownership rule</h4><p>The accountable owner accepts the business result and exception policy. The delivery owner operates the service and reports its SLO. The data owner is responsible for meaning, entitlement and source quality. These roles can be different; name all three in the service catalogue and escalation path.</p>
+      <p><b>Suggested operating rhythm:</b> page the service owner for live SLO breaches; Operations / Trading / Risk triage material intraday breaks; process owners review cut-off completion daily; CRO, CIO, COO or CFO forums review trends and control exceptions weekly or monthly; the CDO council resolves recurring data ownership and quality issues.</p>
+    </aside>
+  </section>
 }
 
 // ───────────────────────── Design principles ─────────────────────────

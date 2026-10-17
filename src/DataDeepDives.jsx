@@ -171,8 +171,8 @@ export function SecMasterSection() {
       </ol>
 
       <h4 className="gap">Corporate actions: what each type does</h4>
-      <div className="seg ca-seg" role="tablist">
-        {secMaster.caTypes.map((t, i) => <button key={t[0]} role="tab" aria-selected={i === ca} className={i === ca ? 'on' : ''} onClick={() => setCa(i)}>{t[0]}</button>)}
+      <div className="seg ca-seg" role="group" aria-label="Corporate action type">
+        {secMaster.caTypes.map((t, i) => <button key={t[0]} aria-pressed={i === ca} className={i === ca ? 'on' : ''} onClick={() => setCa(i)}>{t[0]}</button>)}
       </div>
       {(() => {
         const [type, kind, sm, pos, px, acct] = secMaster.caTypes[ca]

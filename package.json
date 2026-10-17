@@ -9,7 +9,7 @@
     "preview": "vite build --mode preview && vite preview",
     "dev:auth": "npm run build && node --watch --env-file-if-exists=.env server.mjs",
     "start": "node --env-file-if-exists=.env server.mjs",
-    "test": "node --test server.test.mjs"
+    "test": "node --test server.test.mjs decision-store.test.mjs"
   },
   "dependencies": {
     "google-auth-library": "^11.3.1",

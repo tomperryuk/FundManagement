@@ -103,7 +103,7 @@ export default function MarketMakingView({ part = 'model' }) {
 
   if (part === 'decisions') return (
     <div className="mm">
-      <p className="muted">Decisions to make before committing to a market-making business. Choices are saved in this browser.</p>
+      <p className="muted">Decisions to make before committing to a market-making business. Choices are saved to the shared decision register.</p>
       {mmDecisions.map((d, i) => <DecisionCard key={d.id} d={d} n={i + 1} anchor={'decision-' + d.id} chosen={choices[d.id]} choose={choose} />)}
     </div>
   )
