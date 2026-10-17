@@ -14,6 +14,7 @@ import OrgView from './OrgView.jsx'
 import MarketMakingView from './MarketMakingView.jsx'
 import Glossary from './Glossary.jsx'
 import TreasuryView from './TreasuryView.jsx'
+import AIContextView from './AIContextView.jsx'
 
 export const STAGES = [
   {
@@ -50,6 +51,12 @@ export const STAGES = [
         summary: 'How cash, funding and payments fit the platform: what treasury owns, the daily cycle, the liquidity areas it manages and the controls around it.',
         parts: [['role', 'Role & cash flows'], ['cycle', 'Daily cycle'], ['liquidity', 'Liquidity & financing'], ['controls', 'Controls & decisions']],
         render: (part) => <TreasuryView part={part} />,
+      },
+      {
+        id: 'ai', title: 'Ontology, AI & SDLC',
+        summary: 'Where a shared ontology and context layer adds value across the platform, which AI uses it enables, how AI fits software delivery, and the guardrails and decisions needed.',
+        parts: [['context', 'Ontology & context layer'], ['usecases', 'AI use cases'], ['sdlc', 'AI in the SDLC'], ['guardrails', 'Guardrails & decisions'], ['path', 'Adoption path']],
+        render: (part) => <AIContextView part={part} />,
       },
       {
         id: 'glossary', title: 'Research & trading glossary',

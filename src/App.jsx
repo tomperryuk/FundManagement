@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { STAGES, STEPS, READING_PATHS, pathSteps, href, legacyRedirect, parseRoute } from './journey.jsx'
 import { useDecisionState } from './choices.js'
 import { DecisionSyncNotice } from './DecisionEditor.jsx'
+import { TechTooltipHost } from './Tech.jsx'
 
 function useRoute() {
   const [route, setRoute] = useState(() => {
@@ -144,6 +145,7 @@ export default function App() {
           </nav>
           <p className="progress">{page.stage.optional ? "Optional extension" : `Stage ${page.stage.n} of 4`} · {page.stage.title} · section {stageIndex + 1} of {stageSteps.length}</p>
         </main>
+        <TechTooltipHost />
       </div>
     </div>
   )

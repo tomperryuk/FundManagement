@@ -6,6 +6,7 @@ import {
 } from './marketMaking.js'
 import { DecisionCard } from './SystemMap.jsx'
 import { useChoices } from './choices.js'
+import Tech from './Tech.jsx'
 
 const ORDER = ['reuse', 'extend', 'separate', 'replace', 'none']
 
@@ -70,7 +71,7 @@ export default function MarketMakingView({ part = 'model' }) {
           <article key={name} className="ts-card">
             <div className="ts-head"><h4>{name}</h4><span className="verdict v-new">New</span></div>
             <p className="small">{what}</p>
-            <p className="alts">Typical technology: {tech}</p>
+            <p className="alts">Typical technology: <Tech>{tech}</Tech></p>
           </article>
         ))}
       </div>
@@ -84,7 +85,7 @@ export default function MarketMakingView({ part = 'model' }) {
         {targetZones.map(([zone, where, items, note], i) => (
           <section key={zone} className={'zone-card z' + i}>
             <header><b>{zone}</b><span>{where}</span></header>
-            <div className="chip-row">{items.map((x) => <span key={x} className="tech">{x}</span>)}</div>
+            <div className="chip-row">{items.map((x) => <span key={x} className="tech"><Tech>{x}</Tech></span>)}</div>
             <p className="small muted">{note}</p>
           </section>
         ))}

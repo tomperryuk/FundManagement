@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import Tech from './Tech.jsx'
 import { nodes, nodeById, domains } from './systemData.js'
 import { designs } from './designData.js'
 import { criteria, options, componentSourcing, techLayers } from './sourcing.js'
@@ -187,10 +188,10 @@ export function Stack({ part } = {}) {
           <div className="ts-grid">
             {items.map(([tname, licence, role, why, alts, used]) => (
               <article key={tname} className={'ts-card' + (focus ? (used.includes(focus) ? ' lit' : ' faded') : '')}>
-                <div className="ts-head"><h4>{tname}</h4><span className="lic">{licence}</span></div>
+                <div className="ts-head"><h4><Tech>{tname}</Tech></h4><span className="lic">{licence}</span></div>
                 <p className="ts-role">{role}</p>
                 <p className="muted small">{why}</p>
-                <p className="alts">Alternatives: {alts.join(' · ')}</p>
+                <p className="alts">Alternatives: <Tech>{alts.join(' · ')}</Tech></p>
                 <div className="chip-row">{used.map((u) => <NodeChip key={u} id={u} />)}</div>
               </article>
             ))}
@@ -213,9 +214,9 @@ export function Stack({ part } = {}) {
                   <span className={'path p-' + path.toLowerCase()}>{path}</span>
                 </header>
                 <dl>
-                  {(d?.stack || []).slice(0, 5).map(([layer, choice]) => <div key={layer}><dt>{layer}</dt><dd>{choice}</dd></div>)}
+                  {(d?.stack || []).slice(0, 5).map(([layer, choice]) => <div key={layer}><dt>{layer}</dt><dd><Tech>{choice}</Tech></dd></div>)}
                 </dl>
-                <p className="cs-tech small muted">Platform technologies: {techFor(n.id).join(', ') || '—'}</p>
+                <p className="cs-tech small muted">Platform technologies: <Tech>{techFor(n.id).join(', ') || '—'}</Tech></p>
                 <div className="cs-links">
                   <a className="q-link" href={`#/node/${n.id}`}>Full design</a>
                   {d && <a className="q-link" href={`#/node/${n.id}/d1`}>{d.decisions.length} design decisions</a>}

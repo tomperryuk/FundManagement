@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
+import Modal from './Modal.jsx'
+import Tech from './Tech.jsx'
 import { VIEW, domains, edgeKinds, zones, nodes, nodeById, edges, edgeById, flows } from './systemData.js'
 import { routeEdges } from './router.js'
 import { designs } from './designData.js'
@@ -407,9 +409,6 @@ function NodeDetail({ id, comp, decision, go, openFlow }) {
   const design = designs[id]
 
   useEffect(() => {
-    if (comp != null) document.getElementById('component-detail')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
-  }, [comp])
-  useEffect(() => {
     if (decision != null) document.getElementById(`decision-${id}-${decision}`)?.scrollIntoView({ block: 'start', behavior: 'smooth' })
   }, [id, decision])
   const jump = (sid) => document.getElementById(sid)?.scrollIntoView({ block: 'start', behavior: 'smooth' })
@@ -464,14 +463,14 @@ function NodeDetail({ id, comp, decision, go, openFlow }) {
           {inbound.length ? inbound.map((e) => <Iface key={e.id} e={e} />) : <p className="muted small">{n.domain === 'platform' ? 'Cross-cutting: used by every component.' : 'No inbound interfaces.'}</p>}
         </div>
         <div className="ctx-core">
-          <div className="core-head"><span>{n.label}</span><small>{n.components.length ? `${n.components.length} internal components · select one` : n.external ? 'External party' : ''}</small></div>
+          <div className="core-head"><span>{n.label}</span><small>{n.components.length ? `${n.components.length} internal components · select one to open` : n.external ? 'External party' : ''}</small></div>
           {n.components.length > 0 ? (
             <div className="comp-grid">
               {n.components.map((x, i) => (
                 <button key={x.name} className={'comp' + (comp === i ? ' on' : '')} onClick={() => go(id, comp === i ? null : i)}>
                   <b>{x.name}</b>
                   <span>{x.desc}</span>
-                  {x.tech && <small>{x.tech}</small>}
+                  {x.tech && <small><Tech>{x.tech}</Tech></small>}
                 </button>
               ))}
             </div>
@@ -488,19 +487,21 @@ function NodeDetail({ id, comp, decision, go, openFlow }) {
       </section>
 
       {/* Level 3: component detail */}
+      <Modal open={!!c} onClose={() => go(id, null)} label={c ? `${n.label}: ${c.name}` : ''}>
       {c && (
         <section className="comp-detail" id="component-detail">
           <p className="eyebrow">Component · {n.label}</p>
           <h3>{c.name}</h3>
           <p>{c.desc}</p>
           <ul>{c.details.map((x) => <li key={x}>{x}</li>)}</ul>
-          {c.tech && <p className="tech"><span>Typical technology</span>{c.tech}</p>}
+          {c.tech && <p className="tech"><span>Typical technology</span><Tech>{c.tech}</Tech></p>}
           <div className="row">
             <button disabled={comp === 0} onClick={() => go(id, comp - 1)}>← Previous component</button>
             <button disabled={comp === n.components.length - 1} onClick={() => go(id, comp + 1)}>Next component →</button>
           </div>
         </section>
       )}
+      </Modal>
 
       {design && <DesignSection id={id} design={design} go={go} />}
 
@@ -566,7 +567,7 @@ function NodeDetail({ id, comp, decision, go, openFlow }) {
 
         {n.vendors && (
           <Block title="Vendor landscape">
-            <div className="examples">{n.vendors.map((v) => <span key={v} className="tag-plain">{v}</span>)}</div>
+            <div className="examples">{n.vendors.map((v) => <span key={v} className="tag-plain"><Tech>{v}</Tech></span>)}</div>
           </Block>
         )}
 
@@ -608,7 +609,7 @@ function DesignSection({ id, design, go }) {
           <table className="tbl stack-tbl">
             <tbody>
               {design.stack.map(([layer, choice, why]) => (
-                <tr key={layer}><th>{layer}</th><td><b>{choice}</b><br /><span className="muted">{why}</span></td></tr>
+                <tr key={layer}><th>{layer}</th><td><b><Tech>{choice}</Tech></b><br /><span className="muted">{why}</span></td></tr>
               ))}
             </tbody>
           </table>

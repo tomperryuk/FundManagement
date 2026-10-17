@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import Modal from './Modal.jsx'
+import Tech from './Tech.jsx'
 import { nodeById, domains } from './systemData.js'
 import {
   stages, lanes, governanceBar, snowflake, modelLayers, modelConventions,
@@ -32,18 +34,23 @@ export default function DataArchitecture({ part, dataset } = {}) {
   const show = (k) => !part || part === k
   const [domain, setDomain] = useState('all')
   const [sel, setSel] = useState(byId[dataset] ? dataset : 'positions')
+  const [open, setOpen] = useState(!!byId[dataset])
+  const close = () => {
+    setOpen(false)
+    if (part === 'datasets') window.history.replaceState(null, '', '#/datasets')
+  }
   const shown = datasets.filter((d) => domain === 'all' || d.domain === domain)
   const d = byId[sel]
   // In the journey, datasets have their own page; elsewhere fall back to scrolling.
   const pick = (id) => {
     if (part) { window.location.hash = '#/datasets/' + id; return }
-    setSel(id); setDomain('all'); jump('da-datasets')
+    setSel(id); setDomain('all'); setOpen(true)
   }
   const choose = (id) => {
-    setSel(id)
+    setSel(id); setOpen(true)
     if (part === 'datasets') window.history.replaceState(null, '', '#/datasets/' + id)
   }
-  useEffect(() => { if (byId[dataset]) setSel(dataset) }, [dataset])
+  useEffect(() => { if (byId[dataset]) { setSel(dataset); setOpen(true) } }, [dataset])
 
   useEffect(() => {
     const id = window.location.hash.slice(1)
@@ -90,7 +97,7 @@ export default function DataArchitecture({ part, dataset } = {}) {
                   <div key={i} className={'lane-cell l-' + l.id + (cell.some((c) => c.sf) ? ' has-sf' : '')}>
                     {cell.map((c) => {
                       const t = typeof c === 'string' ? c : c.t
-                      return <span key={t} className={'tech' + (c.sf ? ' sf' : '')}>{t}</span>
+                      return <span key={t} className={'tech' + (c.sf ? ' sf' : '')}><Tech>{t}</Tech></span>
                     })}
                   </div>
                 ))}
@@ -167,6 +174,8 @@ export default function DataArchitecture({ part, dataset } = {}) {
               </li>
             ))}
           </ul>
+        </div>
+        <Modal open={open} onClose={close} label={d.name}>
           <article className="ds-detail">
             <p className="eyebrow">{dataDomains[d.domain]}</p>
             <h3>{d.name}</h3>
@@ -182,7 +191,7 @@ export default function DataArchitecture({ part, dataset } = {}) {
             <VendorGuidance dataset={d} />
 
             <h4>Where it lives</h4>
-            <table className="tbl"><tbody>{d.storage.map(([tier, tech, why]) => <tr key={tier + tech}><th>{tier}</th><td><b>{tech}</b><br /><span className="muted small">{why}</span></td></tr>)}</tbody></table>
+            <table className="tbl"><tbody>{d.storage.map(([tier, tech, why]) => <tr key={tier + tech}><th>{tier}</th><td><b><Tech>{tech}</Tech></b><br /><span className="muted small">{why}</span></td></tr>)}</tbody></table>
 
             <h4 className="gap">Recommended data model</h4>
             <dl className="ds-model">
@@ -211,7 +220,7 @@ export default function DataArchitecture({ part, dataset } = {}) {
             {['instruments', 'corpactions', 'entities', 'calendars'].includes(d.id) && <a className="primary-link as-btn" href="#/secmaster">Read the security master deep dive →</a>}
             {d.id === 'altdata' && <a className="primary-link as-btn" href="#/altdata">Read the alternative data deep dive →</a>}
           </article>
-        </div>
+        </Modal>
       </section>
       </>)}
 
@@ -247,8 +256,8 @@ export default function DataArchitecture({ part, dataset } = {}) {
             <article key={cat} className={'tech-card' + (rec === 'Snowflake' ? ' sf-card' : '')}>
               <p className="eyebrow">{where}</p>
               <h4>{cat}</h4>
-              <p className="rec"><span className="pill b-build">Recommended</span> {rec}</p>
-              <p className="alts">Alternatives: {alts.join(' · ')}</p>
+              <p className="rec"><span className="pill b-build">Recommended</span> <Tech>{rec}</Tech></p>
+              <p className="alts">Alternatives: <Tech>{alts.join(' · ')}</Tech></p>
             </article>
           ))}
         </div>

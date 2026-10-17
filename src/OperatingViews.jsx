@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import Modal from './Modal.jsx'
 import { nodeById, domains } from './systemData.js'
 import {
   strategyGroups, profile, pillars, groupNeeds, reviewChanges, openQuestions,
@@ -113,6 +114,7 @@ export function BusinessFit({ part } = {}) {
 export function Lifecycle({ part } = {}) {
   const show = (k) => !part || part === k
   const [i, setI] = useState(0)
+  const [open, setOpen] = useState(false)
   const [group, setGroup] = useState('equity')
   const s = lifecycle[i]
 
@@ -136,7 +138,7 @@ export function Lifecycle({ part } = {}) {
             <ol>
               {lifecycle.map((x, idx) => x.phase === p && (
                 <li key={x.step}>
-                  <button className={idx === i ? 'on' : idx < i ? 'done' : ''} aria-pressed={idx === i} onClick={() => setI(idx)}>
+                  <button className={idx === i ? 'on' : idx < i ? 'done' : ''} aria-pressed={idx === i} onClick={() => { setI(idx); setOpen(true) }}>
                     <span className="n">{idx + 1}</span>{x.step}
                   </button>
                 </li>
@@ -146,6 +148,8 @@ export function Lifecycle({ part } = {}) {
         ))}
       </div>
 
+      <p className="hint-tap">Select a stage to open its full detail.</p>
+      <Modal open={open} onClose={() => setOpen(false)} label={`Stage ${i + 1}: ${s.step}`}>
       <article className="lc-detail">
         <header className="lc-head">
           <div>
@@ -204,6 +208,7 @@ export function Lifecycle({ part } = {}) {
           <button disabled={i === lifecycle.length - 1} onClick={() => setI(i + 1)}>{i < lifecycle.length - 1 ? lifecycle[i + 1].step : 'Next'} →</button>
         </div>
       </article>
+      </Modal>
       </>)}
 
       {show('day') && (<>
