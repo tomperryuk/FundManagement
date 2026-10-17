@@ -3,6 +3,7 @@ import { STAGES, STEPS, READING_PATHS, pathSteps, href, legacyRedirect, parseRou
 import { useDecisionState } from './choices.js'
 import { DecisionSyncNotice } from './DecisionEditor.jsx'
 import { TechTooltipHost } from './Tech.jsx'
+import ThemeToggle from './ThemeToggle.jsx'
 
 function useRoute() {
   const [route, setRoute] = useState(() => {
@@ -56,6 +57,7 @@ export default function App() {
       <a className="skip-link" href="#main-content">Skip to content</a>
       <header className="masthead">
         <div className="masthead-inner">
+          <ThemeToggle />
           <a className="brand" href={href('overview')}>
             <span className="brand-mark" aria-hidden="true" />
             <div>

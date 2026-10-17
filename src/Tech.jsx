@@ -1,19 +1,10 @@
 import { useEffect, useState } from 'react'
-import { techGlossary, techPattern } from './techGlossary.js'
+import { annotate } from './gloss/annotate.jsx'
 
-// Wraps known technology names in plain text with a hover/focus explanation.
+// Explicit wrapper for strings built in code (for example joined lists); focusable so keyboard users can read the explanation.
 export default function Tech({ children }) {
   if (typeof children !== 'string') return children ?? null
-  const out = []
-  let last = 0
-  for (const m of children.matchAll(techPattern)) {
-    if (m.index > last) out.push(children.slice(last, m.index))
-    out.push(<span key={m.index} className="tt" tabIndex={0} data-tip={techGlossary[m[0]]} aria-describedby="tech-tip">{m[0]}</span>)
-    last = m.index + m[0].length
-  }
-  if (!out.length) return children
-  if (last < children.length) out.push(children.slice(last))
-  return <>{out}</>
+  return annotate(children, true) ?? children
 }
 
 // Single floating tooltip shared by every .tt element (works inside scrolling dialogs and on keyboard focus).
@@ -28,6 +19,8 @@ export function TechTooltipHost() {
     }
     const hide = (e) => { if (!e || !(e.target instanceof Element) || e.target.closest('.tt')) setTip(null) }
     const esc = (e) => { if (e.key === 'Escape') setTip(null) }
+    const tap = (e) => { if (!(e.target instanceof Element && e.target.closest('.tt'))) setTip(null); else show(e) }
+    document.addEventListener('click', tap)
     document.addEventListener('mouseover', show)
     document.addEventListener('focusin', show)
     document.addEventListener('mouseout', hide)
@@ -35,7 +28,7 @@ export function TechTooltipHost() {
     document.addEventListener('keydown', esc)
     window.addEventListener('scroll', hide, true)
     return () => {
-      document.removeEventListener('mouseover', show); document.removeEventListener('focusin', show)
+      document.removeEventListener('click', tap); document.removeEventListener('mouseover', show); document.removeEventListener('focusin', show)
       document.removeEventListener('mouseout', hide); document.removeEventListener('focusout', hide)
       document.removeEventListener('keydown', esc); window.removeEventListener('scroll', hide, true)
     }

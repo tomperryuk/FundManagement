@@ -60,8 +60,8 @@ code { font-family: var(--mono); font-size: .78rem; }
 kbd { font-family: var(--mono); font-size: .75rem; border: 1px solid var(--border-2); border-bottom-width: 2px; padding: 0 4px; border-radius: 3px; }
 
 /* Masthead */
-.masthead { background: var(--navy); color: var(--mast-text); padding-top: env(safe-area-inset-top, 0px); }
-.masthead-inner { max-width: 1480px; margin: 0 auto; padding: 18px 24px 0; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 32px; }
+.masthead { position: relative; background: var(--navy); color: var(--mast-text); padding-top: env(safe-area-inset-top, 0px); }
+.masthead-inner { max-width: 1480px; margin: 0 auto; padding: 34px 24px 0; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 32px; }
 .brand { display: flex; align-items: center; gap: 14px; padding-bottom: 16px; }
 .brand-mark { width: 30px; height: 30px; border: 2px solid var(--mast-text); position: relative; flex: none; }
 .brand-mark::after { content: ''; position: absolute; inset: 6px; background: var(--blue); }
@@ -1116,3 +1116,12 @@ button:disabled { opacity: .55; cursor: not-allowed; }
   .flow-row li + li::before { content: '↓'; left: 12px; top: -19px; }
   .flow-row ol.parallel { gap: 8px; }
 }
+
+/* Theme selector */
+.theme-toggle { position: absolute; top: 8px; right: 24px; display: inline-flex; border: 1px solid color-mix(in srgb, var(--mast-muted) 50%, transparent); border-radius: 2px; overflow: hidden; }
+.theme-toggle button { background: none; border: 0; padding: 3px 11px; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--mast-muted); }
+.theme-toggle button + button { border-left: 1px solid color-mix(in srgb, var(--mast-muted) 50%, transparent); }
+.theme-toggle button:hover { color: var(--mast-text); }
+.theme-toggle button.on { background: var(--mast-text); color: var(--navy); }
+@media (max-width: 760px) { .theme-toggle { right: 16px; } }
+@media print { .theme-toggle { display: none; } }
