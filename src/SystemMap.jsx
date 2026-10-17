@@ -3,14 +3,14 @@ import { VIEW, domains, edgeKinds, zones, nodes, nodeById, edges, edgeById, flow
 import { routeEdges } from './router.js'
 import { designs } from './designData.js'
 import { useChoices } from './choices.js'
-import { photon } from './operatingModel.js'
+import { riskPlatform } from './operatingModel.js'
 
 const ROUTES = routeEdges(nodes, edges, VIEW.w, VIEW.h)
 const DEEP_DIVES = {
-  secmaster: ['#security-master', 'Security master deep dive'],
-  research: ['#alternative-data', 'Alternative data deep dive'],
-  lake: ['#alternative-data', 'Alternative data deep dive'],
-  risk: ['#photon', 'Where Photon fits'],
+  secmaster: ['#/secmaster', 'Security master deep dive'],
+  research: ['#/altdata', 'Alternative data deep dive'],
+  lake: ['#/altdata', 'Alternative data deep dive'],
+  risk: ['#/fit/risk', 'Photon fit & diligence'],
 }
 const KIND_IDS = Object.keys(edgeKinds)
 
@@ -30,7 +30,7 @@ export function useDrill() {
     return () => window.removeEventListener('hashchange', on)
   }, [])
   const go = (id, comp = null) => {
-    window.location.hash = id ? `/node/${id}${comp != null ? '/' + comp : ''}` : ''
+    window.location.hash = id ? `/node/${id}${comp != null ? '/' + comp : ''}` : '/map'
     window.scrollTo({ top: 0 })
   }
   return [drill, go]
@@ -116,7 +116,7 @@ function MapView({ flowId, setFlowId, step, setStep, kinds, setKinds, sel, setSe
           <h2>End-to-end platform map</h2>
           <p className="lede">
             Candidate components, ownership boundaries and interfaces for a multi-strategy, multi-manager platform.
-            This is a target-state reference, not a confirmed inventory of Verition’s current systems. Hover to trace
+            Aligned to Verition’s operating model; current internal systems still require confirmation. Hover to trace
             connections, click to inspect, and open a component for its options and trade-offs.
           </p>
         </div>
@@ -139,12 +139,11 @@ function MapView({ flowId, setFlowId, step, setStep, kinds, setKinds, sel, setSe
           </div>
         </div>
         <div className="toolbar-group">
-          <span className="toolbar-label">Verition stack</span>
-          <div className="chips">
-            <button className={'chip photon-chip' + (showPhoton ? ' on' : '')} onClick={() => { setShowPhoton(!showPhoton); setSel(null) }} aria-pressed={showPhoton}>
-              <i />Photon footprint (licensed from Eisler Capital)
-            </button>
-          </div>
+          <span className="toolbar-label">Verition context</span>
+          <button className={'chip' + (showPhoton ? ' on' : '')} aria-pressed={showPhoton} onClick={() => { setShowPhoton(!showPhoton); setSel(null) }}>
+            Photon integration candidates
+          </button>
+          <a className="primary-link" href="#/fit/risk">Photon detail →</a>
         </div>
         {!flow && (
           <div className="toolbar-group">
@@ -178,8 +177,6 @@ function MapView({ flowId, setFlowId, step, setStep, kinds, setKinds, sel, setSe
               </g>
             ))}
 
-            {showPhoton && <PhotonOverlay />}
-
             {shownEdges.map((e) => {
               const r = ROUTES[e.id]
               const on = hiEdges?.has(e.id)
@@ -203,8 +200,7 @@ function MapView({ flowId, setFlowId, step, setStep, kinds, setKinds, sel, setSe
               return (
                 <g
                   key={n.id}
-                  className={['node', n.external ? 'ext' : '', n.wide ? 'wide' : '', dim ? 'dim' : '', isSel ? 'sel' : '', hiNodes?.has(n.id) ? 'hi' : '',
-                    showPhoton && photon.primary.includes(n.id) ? 'photon' : '', showPhoton && photon.partial.includes(n.id) ? 'photon-partial' : ''].join(' ')}
+                  className={['node', n.external ? 'ext' : '', n.wide ? 'wide' : '', dim ? 'dim' : '', isSel ? 'sel' : '', hiNodes?.has(n.id) ? 'hi' : '', showPhoton && riskPlatform.partial.includes(n.id) ? 'photon-candidate' : ''].join(' ')}
                   transform={`translate(${n.x},${n.y})`}
                   style={{ '--c': color }}
                   tabIndex={0}
@@ -259,10 +255,8 @@ function MapView({ flowId, setFlowId, step, setStep, kinds, setKinds, sel, setSe
             <NodePanel n={nodeById[sel.id]} go={go} />
           ) : sel?.type === 'edge' ? (
             <EdgePanel e={edgeById[sel.id]} setSel={setSel} />
-          ) : showPhoton ? (
-            <PhotonPanel close={() => setShowPhoton(false)} />
           ) : (
-            <Legend />
+            showPhoton ? <PhotonPanel /> : <Legend />
           )}
         </aside>
       </div>
@@ -270,36 +264,15 @@ function MapView({ flowId, setFlowId, step, setStep, kinds, setKinds, sel, setSe
   )
 }
 
-function PhotonOverlay() {
-  const boxes = photon.primary.map((id) => nodeById[id])
-  const x0 = Math.min(...boxes.map((n) => n.x)) - 8, y0 = Math.min(...boxes.map((n) => n.y)) - 22
-  const x1 = Math.max(...boxes.map((n) => n.x + n.w)) + 8, y1 = Math.max(...boxes.map((n) => n.y + n.h)) + 8
-  return (
-    <g className="photon-overlay">
-      <rect x={x0} y={y0} width={x1 - x0} height={y1 - y0} rx="6" />
-      <text x={x0 + 10} y={y0 + 14}>Photon</text>
-    </g>
-  )
-}
-
-function PhotonPanel({ close }) {
-  return (
-    <div className="panel photon-panel">
-      <div className="panel-top">
-        <p className="eyebrow">Licensed from Eisler Capital · Feb 2026</p>
-        <button className="x" onClick={close} aria-label="Hide Photon footprint">×</button>
-      </div>
-      <h3>Photon</h3>
-      <p>{photon.thesis}</p>
-      <h4>On this map</h4>
-      <ul className="legend">
-        <li><span className="swatch photon-sw" />Most likely realised by Photon: {photon.primary.map((id) => nodeById[id].label).join(', ')}</li>
-        <li><span className="swatch photon-sw partial" />Photon contributes or consumes: {photon.partial.map((id) => nodeById[id].label).join(', ')}</li>
-      </ul>
-      <p className="hint">Photon’s internals and licence terms are not public. This placement is a reference-design view to confirm with the Photon team.</p>
-      <a className="primary-link block" href="#photon">Read the full Photon fit analysis →</a>
-    </div>
-  )
+function PhotonPanel() {
+  return <div className="panel">
+    <p className="eyebrow">Photon · proposed integration</p>
+    <h3>Candidate footprint</h3>
+    <p>{riskPlatform.thesis}</p>
+    <ul>{riskPlatform.partial.map(id => <li key={id}><a href={`#/node/${id}`}>{nodeById[id].label}</a></li>)}</ul>
+    <p className="hint">Dashed outlines identify areas to assess. They do not establish Photon’s actual production deployment.</p>
+    <a className="primary-link" href="#/fit/risk">Detailed fit, data feeds and diligence →</a>
+  </div>
 }
 
 function Legend() {

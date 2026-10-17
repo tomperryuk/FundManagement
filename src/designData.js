@@ -79,7 +79,7 @@ const raw = {
         ['Administrator’s portal', 'Most funds', ['Data already there; low effort'], ['Limited branding and features']],
         ['Third-party investor portal', 'Strong IR focus', ['Better experience, CRM integration'], ['Another integration and data copy']],
         ['Build', 'Rarely', ['Full control'], ['Security and maintenance burden for low differentiation']],
-      ], 'Use the publicly linked Northern Trust portal, subject to scope review', 'Verition publicly links to a Northern Trust investor portal. Confirm which investor services it covers and minimise unnecessary copies of investor PII.', 'Investor relations needs a richer experience or a separate service is contractually required.'],
+      ], 'Administrator’s portal', 'Verition publicly links to Northern Trust’s investor portal. Retain that integration subject to service-scope review; separately verify administration, TA and dealing responsibilities.', 'Investor relations needs a richer experience or a separate service is contractually required.'],
       ['How are documents delivered?', 'Statements and K-1s contain sensitive data.', [
         ['Portal-only with email notification', 'Default', ['No sensitive data in email', 'Download audit'], ['Investors must log in']],
         ['Encrypted email attachments', 'Investor insists', ['Convenient'], ['Hard to revoke; weak audit']],
@@ -233,7 +233,7 @@ const raw = {
         ['Event-driven, in-house', 'Promotion to production', ['Realistic fills, costs, borrow and capacity'], ['Build and maintain']],
         ['Vendor (Deltix, QuantConnect LEAN)', 'Small quant team', ['Ready to use'], ['Fit and extensibility limits']],
       ], 'Event-driven, in-house', 'Use vectorised backtests to screen ideas and require an event-driven backtest before any signal is promoted.', 'Strategies are low-turnover enough that vectorised results match.'],
-      ['How much do investment teams share?', 'Verition publicly describes cooperation and cross-pollination rather than a siloed approach. Confidentiality, MNPI and contract boundaries still need explicit enforcement.', [
+      ['How much do investment teams share?', 'Verition’s published philosophy emphasises collaboration across teams. The proposed library supports discovery and attribution while enforcing confidentiality, MNPI and contractual boundaries.', [
         ['Siloed per team', 'Platforms that compete teams against each other', ['Simple to entitle; protects each team’s IP'], ['Duplicated data spend and research', 'Contradicts a collaborative operating model']],
         ['Shared by default, walled by exception', 'Collaborative multi-strategy firms', ['Teams discover and reuse datasets, signals and research', 'One data licence serves many teams', 'Walls still applied for MNPI and wall-crossed deals'], ['Entitlement model must be precise', 'Needs clear attribution when one team uses another’s idea']],
         ['Fully open', 'Small single-office funds', ['No friction'], ['Cannot honour MNPI walls or team contracts']],
@@ -248,7 +248,7 @@ const raw = {
     shape: 'An event-driven service holding in-memory views of each team’s positions (from IBOR events) joined to live prices, exposing a query API and streams to the workstation. An optimiser service is called on demand. Order generation turns target-minus-current into proposed orders and submits them to the OMS. P&L comes from one central calculation shared with risk, so every screen shows the same number.',
     stack: [
       ['Core', 'Vendor PMS bundled with the OMS', 'Integrated compliance and order flow.'],
-      ['Analytics layer', 'Validated vendor risk views plus in-house services where gaps are proven', 'Assess Photon coverage and interfaces before assigning it a production role.'],
+      ['Analytics layer', 'Photon candidate views plus selected in-house services', 'Assess Photon coverage, interfaces and controls before assigning a PM analytics role.'],
       ['P&L', 'Central P&L service', 'One number across PMS, risk and reporting.'],
       ['Optimiser', 'CVXPY + MOSEK; Axioma for discretionary teams', 'Constraint-rich portfolio construction.'],
       ['Cache', 'In-memory with snapshots to Postgres', 'Sub-second position views.'],
@@ -272,8 +272,8 @@ const raw = {
   risk: {
     shape: 'Streaming and batch together. Streaming: exposures from positions × prices × sensitivities, refreshed within a minute, with drawdown and gross/net limits checked continuously. Batch: EOD VaR, stress and liquidity on an elastic grid. Results land in a columnar risk store with dimensions (firm, strategy group, team, factor, instrument) so they can be sliced interactively. A limits service turns measures into breaches and escalations.',
     stack: [
-      ['Real-time risk aggregation', 'Photon is a candidate (licence reported)', 'Confirm production capabilities, asset coverage, interfaces, service levels and rights before relying on it.'],
-      ['Factor models', 'MSCI Barra or Axioma', 'Industry-standard risk language for CIO and investors; complements Photon for equity factor and crowding risk.'],
+      ['Real-time risk aggregation', 'Photon candidate, subject to coverage and control review', 'The reported licence informs the assessment; production role, rights and capabilities require internal validation.'],
+      ['Factor models', 'MSCI Barra or Axioma', 'Industry-standard risk language for CIO and investors; complement with specialist factor and crowding analysis as needed.'],
       ['Pricing library', 'QuantLib / ORE; Numerix for exotics', 'Full revaluation and Greeks.'],
       ['Grid', 'Kubernetes on spot instances (Ray or Armada)', 'Elastic EOD compute.'],
       ['Risk store', 'ClickHouse', 'Fast slice-and-dice over billions of rows.'],
@@ -281,17 +281,17 @@ const raw = {
       ['Limits & workflow', 'Kotlin service + Postgres', 'Breaches, escalation, sign-off.'],
     ],
     decisions: [
-      ['What role should Photon play?', 'Public reporting confirms a licence agreement but does not establish detailed capabilities or operating terms.', [
-        ['Integrate after coverage validation', 'Coverage, data rights, support and controls pass review', ['Build on the licensed capability where it fits', 'Limits initial dependency to proven areas'], ['Requires a fit-gap and control review']],
+      ['What role should Photon play?', 'Assess the reported licensed platform across Verition’s four strategy groups; detailed capabilities and production status are not established publicly.', [
+        ['Integrate after coverage validation', 'Coverage, data rights, support and controls pass review', ['Build on the selected capability where it fits', 'Limits initial dependency to proven areas'], ['Requires a fit-gap and control review']],
         ['Use for selected strategy groups', 'Coverage is strong in some asset classes only', ['Preserves best-fit specialist workflows', 'Reduces replacement risk'], ['Requires central reconciliation across multiple tools']],
         ['Keep as a limited research / comparison source', 'Production readiness or rights are not established', ['Low control risk while diligence continues'], ['Duplicates work and may defer benefits']],
       ], 'Integrate after coverage validation', 'Start with read-only feeds and shadow comparisons. Expand only after control owners accept coverage, reconciliation, recovery and licensing evidence. Keep an independent check.', 'A formal product and operating review confirms a wider or narrower scope.'],
-      ['How could Photon receive data?', 'If adopted for production, Photon needs an approved, supportable source of data while preserving clear ownership of positions.', [
-        ['Consume the event backbone', 'Default', ['Same events as IBOR, PMS and risk; replayable', 'No point-to-point feeds to maintain'], ['Photon needs an adapter to the canonical event model']],
+      ['How should Photon receive data?', 'A proposed Photon integration needs approved, supportable interfaces while preserving clear ownership of positions and accounting books.', [
+        ['Consume the event backbone', 'Default', ['Same events as IBOR, PMS and risk; replayable', 'No point-to-point feeds to maintain'], ['Vendor needs an adapter to the canonical event model']],
         ['Point integrations to OMS and PBs', 'Fast start', ['Quick to wire up'], ['Fragile; diverges from IBOR; every new source is a project']],
-        ['Photon keeps its own positions', 'Only if it is also the IBOR', ['Self-contained'], ['Two position truths that will drift']],
-      ], 'Consume the event backbone', 'Feed Photon from the same events that build the IBOR and reconcile Photon positions to the IBOR daily.', 'Photon is adopted as the IBOR itself; then make it the single source and retire the other.'],
-      ['What rights and continuity are needed for Photon?', 'Public reporting confirms a licence agreement but does not disclose terms, ownership, support or continuity arrangements.', [
+        ['Platform keeps its own positions', 'Only if it is also the IBOR', ['Self-contained'], ['Two position truths that will drift']],
+      ], 'Consume the event backbone', 'Feed the risk platform from governed position and market-data interfaces; reconcile views to the IBOR.', 'The product is formally selected as the IBOR and the other book is retired.'],
+      ['What rights and continuity are needed for Photon?', 'Confirm the actual licence, support, data portability, source-access and exit terms before production dependency grows.', [
         ['Use the contracted service as-is', 'Capabilities are complete and service commitments are strong', ['Fastest start', 'Vendor owns maintenance'], ['Limited control and possible exit dependency']],
         ['Negotiate operational protections', 'The capability is important to production', ['Clear support, data access, change, continuity and exit terms'], ['Commercial and legal effort']],
         ['Build an alternative / exit path', 'Dependency or coverage risk is unacceptable', ['More control and bargaining power'], ['Duplicate cost and delivery effort']],
@@ -310,7 +310,7 @@ const raw = {
         ['Intraday for gross, net, drawdown and concentration', 'Default', ['Catches losses while they happen'], ['Needs streaming infrastructure']],
         ['EOD only', 'Small single-strategy funds', ['Simple'], ['A team can blow through a limit intraday']],
       ], 'Intraday for gross, net, drawdown and concentration', 'Monitor simple measures intraday and VaR and stress at EOD.', 'Never relax for drawdown.'],
-      ['How are risk numbers independently checked?', 'Verition describes its risk system as multi-tiered and iterative, using internal and external risk controls (“trust but verify”).', [
+      ['How are risk numbers independently checked?', 'Verition publicly describes internal and external risk controls. Proposed independent checks should challenge the inputs, models and outputs of Photon and other engines.', [
         ['Internal only', 'Small funds', ['No extra cost'], ['No independent check of models or data']],
         ['External risk service, compared monthly', 'Default for institutional funds', ['Independent VaR, exposures and liquidity; strong for investor due diligence'], ['Vendor cost; mapping differences to explain']],
         ['External service, compared daily', 'Large, complex books', ['Problems found within a day'], ['Daily reconciliation effort']],
@@ -340,7 +340,7 @@ const raw = {
         ['Vendor rule DSL', 'Standard rules', ['Business-editable'], ['Hard to test at scale']],
         ['Rules as code with a test harness', 'Custom rules', ['Versioned, reviewed, regression-tested on historical books'], ['Needs engineers']],
       ], 'Rules as code with a test harness', 'Every custom rule gets tests against real historical portfolios before release.', 'Compliance wants to self-serve simple threshold changes.'],
-      ['Firm-wide or team-level restrictions after a wall-crossing?', 'Equity L/S & Capital Markets and Event teams are regularly brought over the wall. Restricting the issuer firm-wide stops every other team trading it.', [
+      ['Firm-wide or team-level restrictions after a wall-crossing?', 'A deal team may be wall-crossed while other teams remain eligible to trade. Scope restrictions narrowly and monitor information barriers.', [
         ['Firm-wide restriction', 'Simple compliance model', ['Easiest to evidence'], ['Blocks unrelated teams; costly in a multi-strategy firm']],
         ['Team-level wall with surveillance', 'Multi-strategy firms with strong barriers', ['Only the crossed team is restricted', 'Other teams keep trading'], ['Needs proven information barriers, entitlements and monitoring']],
       ], 'Team-level wall with surveillance', 'It keeps capital-markets participation from freezing the rest of the firm, provided barriers are enforced in IAM, the research library and communications surveillance.', 'Surveillance shows leakage across a wall.'],
@@ -361,7 +361,7 @@ const raw = {
       ['Cockpit', 'Workstation module (React)', 'Firm → team → position drill-down.'],
     ],
     decisions: [
-      ['How is capital allocated across teams?', 'Verition allocates capital dynamically among its portfolios based on market opportunity and potential risk/reward.', [
+      ['How is capital allocated across teams?', 'Verition’s stated approach reallocates capital as the opportunity set and risk/reward change. The proposed workflow makes team budgets, approvals and resulting limits explicit.', [
         ['Fixed allocations, reviewed annually', 'Stable single-strategy firms', ['Predictable for teams'], ['Slow to move capital to opportunity']],
         ['Rules-based (risk budget × performance)', 'Large platforms wanting consistency', ['Transparent and repeatable'], ['Mechanical; misses regime changes and qualitative views']],
         ['CIO discretion informed by a model', 'Dynamic multi-strategy allocation', ['Combines quantitative evidence with judgement', 'Matches “dynamic capital allocation”'], ['Must record rationale to stay consistent and fair']],
@@ -375,7 +375,7 @@ const raw = {
         ['Raw P&L', 'Never alone', ['Simple'], ['Rewards leverage and luck']],
         ['Risk-adjusted return (Sharpe, return on risk)', 'Default component', ['Rewards skill per unit of risk'], ['Ignores correlation to the rest of the firm']],
         ['Marginal contribution to firm Sharpe', 'Diversified multi-strategy', ['Rewards teams that diversify the firm, matching a low-correlation goal'], ['Harder to explain to teams']],
-      ], 'Marginal contribution to firm Sharpe', 'Verition aims for returns with low correlation to markets and to each other; reward the teams that deliver that.', 'Teams cannot follow the measure; publish a simpler companion metric.'],
+      ], 'Marginal contribution to firm Sharpe', 'Assess team contribution alongside risk, capacity, liquidity, diversification and operational cost, consistent with the firm’s diversification objective.', 'Teams cannot follow the measure; publish a simpler companion metric.'],
       ['How are costs charged to teams?', 'Financing, market data, execution and technology costs are large and uneven across teams.', [
         ['Not charged', 'Small firms', ['Simple'], ['Teams over-consume shared resources']],
         ['Direct costs only (financing, execution)', 'Common', ['Easy to measure'], ['Data and technology costs hidden']],

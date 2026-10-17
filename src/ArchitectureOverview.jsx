@@ -38,24 +38,24 @@ const paths = [
 const choices = [
   ['Buy / configure', 'Core OMS / EMS, fund accounting / administrator services, market and reference data, identity, surveillance, standard factor models.', 'Use where the workflow is common, regulated, or expensive to maintain. Keep exit paths and data access contractual.'],
   ['Build / own', 'Canonical team / book / instrument mappings, research data versions, cross-team analytics, capital allocation logic, event adapters and exception workflows.', 'Own the differentiating integration and control logic. Avoid replacing proven vendor books of record without a specific gap.'],
-    ['Integrate / validate', 'Risk tools, administrator, prime brokers, market venues and data vendors.', 'Treat vendor capability as a hypothesis until coverage, data rights, latency, audit, recovery and support are tested.'],
+    ['Integrate / validate', 'Photon, existing risk tools, administrator, prime brokers, market venues and data vendors.', 'Treat vendor capability as a hypothesis until coverage, data rights, latency, audit, recovery and support are tested.'],
 ]
 
 export default function ArchitectureOverview() {
   return (
     <section className="arch-overview">
-      <p className="eyebrow">Architecture brief · reference design</p>
+      <p className="eyebrow">Verition Fund Management · architecture brief</p>
       <h2>A shared platform for independent investment teams</h2>
       <p className="lede">
-        This is a generic target architecture for a multi-strategy, collaborative hedge fund. It is not an inventory
-        of any firm’s current systems. Reference assumptions and open decisions are separated below so the design can
-        be reviewed without treating assumptions as commitments.
+        This target architecture is aligned to Verition’s publicly described multi-strategy, collaborative operating model.
+        It connects investment research, portfolio construction, trading, risk, capital allocation and fund operations.
+        Public facts, proposed architecture choices and items to confirm are identified below.
       </p>
 
       <div className="arch-evidence">
-        <article><span className="evidence fact">Reference archetype</span><b>Business context</b><p>Multiple investment teams; shared research; dynamic capital allocation; tiered risk controls; outsourced investor and fund services.</p><span>Illustrative; tailor to the target firm.</span></article>
+        <article><span className="evidence fact">Publicly stated</span><b>Verition context</b><p>Four named strategy groups; collaboration across investment teams; dynamic capital allocation; internal and external risk controls; Northern Trust investor portal link.</p><a href="https://www.verition.com/" target="_blank" rel="noreferrer">Verition company profile ↗</a></article>
         <article><span className="evidence inference">Design response</span><b>Architecture pattern</b><p>Shared research and data services with precise access walls; common trade / position interfaces; specialist execution and risk paths by asset class.</p><span>Proposed here; validate with stakeholders.</span></article>
-        <article><span className="evidence confirm">Confirm for firm</span><b>Current estate & constraints</b><p>Existing OMS / EMS / PMS, risk platform capabilities, administrator and PB interfaces, legal-entity perimeter, cloud / residency, latency needs, data rights and operating ownership.</p><a href="#open-questions">See open questions ↓</a></article>
+        <article><span className="evidence confirm">Confirm internally</span><b>Current estate & constraints</b><p>Existing OMS / EMS / PMS, Photon scope, administrator and PB interfaces, legal-entity perimeter, cloud / residency, latency needs, data rights and operating ownership.</p><a href="#open-questions">See open questions ↓</a></article>
       </div>
 
       <h3 className="sec-title">Architecture at a glance</h3>
@@ -82,7 +82,7 @@ export default function ArchitectureOverview() {
       <h3 className="sec-title" id="open-questions">Architecture decisions to resolve first</h3>
       <div className="open-decision-grid">
         <article><b>1 · What is already in production?</b><p>Inventory PMS / OMS / EMS, accounting, risk, market data, administrator, PBs, contracts, owners and interfaces. Prefer retain / integrate / replace decisions by capability, not a platform-wide rip-and-replace.</p></article>
-        <article><b>2 · What does the risk platform cover?</b><p>Confirm asset-class coverage, data interfaces, latency, support, recovery, roadmap and commercial rights. Keep it a risk consumer until reconciled to the official books and accepted by risk owners.</p></article>
+        <article><b>2 · What does Photon cover?</b><p>Assess the reported licence against the four strategy groups: supported instruments, data feeds, latency, recovery, roadmap, commercial rights and operating ownership. Start with shadow comparisons; require risk-owner sign-off before production reliance.</p><a href="#/fit/risk">Read the Photon fit analysis →</a></article>
         <article><b>3 · Where are the hard boundaries?</b><p>Agree investment-team confidentiality, MNPI / wall-crossing, fund and entity segregation, licensed data redistribution, regional residency, and who can override each control.</p></article>
         <article><b>4 · Which workflows need special treatment?</b><p>Measure quant order rates and latency; instrument and counterparty mix; financing and collateral; primary-market allocation; NAV timing; external reporting obligations.</p></article>
       </div>
