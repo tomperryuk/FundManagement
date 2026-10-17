@@ -5,7 +5,7 @@ import { criteria, options, componentSourcing, techLayers } from './sourcing.js'
 
 const internal = nodes.filter((n) => !n.external)
 const domainOrder = ['channels', 'data', 'front', 'risk', 'ops', 'platform']
-const PATHS = ['Build', 'Hybrid', 'License', 'Buy']
+const PATH_ORDER = ['Build', 'Hybrid', 'License', 'Integrate', 'Buy']
 
 function NodeChip({ id }) {
   const n = nodeById[id]
@@ -14,8 +14,14 @@ function NodeChip({ id }) {
 
 // ───────────────────────── Options ─────────────────────────
 
-export function Options() {
-  const [weights, setWeights] = useState(() => Object.fromEntries(criteria.map((c) => [c.id, c.weight])))
+// Weights and the highlighted component survive moving between the sub-pages.
+let savedWeights = Object.fromEntries(criteria.map((c) => [c.id, c.weight]))
+let savedFocus = null
+
+export function Options({ part } = {}) {
+  const show = (k) => !part || part === k
+  const [weights, setWeightsState] = useState(savedWeights)
+  const setWeights = (w) => { savedWeights = w; setWeightsState(w) }
   const [domain, setDomain] = useState('all')
 
   const ranked = useMemo(() => {
@@ -29,19 +35,24 @@ export function Options() {
   const rows = internal
     .filter((n) => domain === 'all' || n.domain === domain)
     .sort((a, b) => domainOrder.indexOf(a.domain) - domainOrder.indexOf(b.domain))
-  const counts = PATHS.map((p) => [p, internal.filter((n) => componentSourcing[n.id][5] === p).length])
+  const used = [...new Set(internal.map((n) => componentSourcing[n.id][5]))]
+    .sort((a, b) => (PATH_ORDER.indexOf(a) + 1 || 99) - (PATH_ORDER.indexOf(b) + 1 || 99))
+  const counts = used.map((p) => [p, internal.filter((n) => componentSourcing[n.id][5] === p).length])
 
   return (
     <section className="opt">
-      <p className="eyebrow">Sourcing options</p>
+      {!part && (<>
+<p className="eyebrow">Sourcing options</p>
       <h2>Build, buy or license</h2>
       <p className="lede">
         Four platform strategies scored against what matters to the firm, then broken down component by component.
         The scores and effort bands are qualitative starting hypotheses, not vendor diligence, cost estimates or delivery
         commitments. Adjust the weights to test priorities; the matrix highlights whichever strategy ranks first.
       </p>
+      </>)}
 
-      <div className="weights">
+      {show('strategies') && (<>
+<div className="weights">
         {criteria.map((c) => (
           <label key={c.id} htmlFor={'w-' + c.id}>
             <span>{c.name} <b>{weights[c.id]}</b></span>
@@ -66,13 +77,16 @@ export function Options() {
               <ul className="pc cons">{o.cons.map((p) => <li key={p}>{p}</li>)}</ul>
             </div>
             <p className="small"><b>Best for:</b> {o.best}</p>
-            <p className={'fit-note' + (o.id === 'hybrid' ? ' rec' : '')}><span>For Verition</span>{o.fit}</p>
+            <p className={'fit-note' + (o.id === 'hybrid' ? ' rec' : '')}><span>Verition fit</span>{o.fit}</p>
           </article>
         ))}
       </div>
+      </>)}
 
-      <h3 className="sec-title">What each option means, component by component</h3>
+      {show('matrix') && (<>
+<h3 className="sec-title">What each option means, component by component</h3>
       <div className="opt-summary">
+        {part === 'matrix' && <p className="muted small">The highlighted column is <b>{top.name}</b>, the strategy ranked first with the weights on <a href="#/options/strategies">Compare strategies</a>.</p>}
         <p>Under the recommended hybrid path:</p>
         {counts.map(([p, n]) => <span key={p} className={'path p-' + p.toLowerCase()}>{n} {p}</span>)}
       </div>
@@ -113,24 +127,30 @@ export function Options() {
         </table>
       </div>
       <p className="muted small">Edge: how much the component may differentiate investment results or control. Effort bands are directional only: S &lt;3 months, M 3–9 months, L 9–18 months with a dedicated team. Re-estimate after current-state discovery.</p>
+      </>)}
     </section>
   )
 }
 
 // ───────────────────────── Tech stack ─────────────────────────
 
-export function Stack() {
-  const [focus, setFocus] = useState(null)
+export function Stack({ part } = {}) {
+  const show = (k) => !part || part === k
+  const [focus, setFocusState] = useState(savedFocus)
+  const setFocus = (v) => { savedFocus = v; setFocusState(v) }
+  const [layer, setLayer] = useState(part ? techLayers[0][0] : 'all')
   const techFor = (id) => techLayers.flatMap(([, , , items]) => items.filter((t) => t[5].includes(id)).map((t) => t[0]))
 
   return (
     <section className="ts">
-      <p className="eyebrow">Technology stack</p>
+      {!part && (<>
+<p className="eyebrow">Technology stack</p>
       <h2>The stack, layer by layer</h2>
       <p className="lede">
         Candidate technologies in the reference design: what each does, why it is considered, the alternatives, and which
         components use it. Choose a component to highlight its technologies, or jump to its full design.
       </p>
+      </>)}
 
       <div className="ts-focus">
         <span className="toolbar-label">Highlight a component</span>
@@ -145,12 +165,20 @@ export function Stack() {
         {focus && <a className="primary-link" href={`#/node/${focus}`}>Open {nodeById[focus].label} design →</a>}
       </div>
 
-      <nav className="jump">
+      {!part && (<>
+<nav className="jump">
         {techLayers.map(([id, name]) => <button key={id} onClick={() => document.getElementById('tl-' + id)?.scrollIntoView({ behavior: 'smooth' })}>{name}</button>)}
         <button onClick={() => document.getElementById('ts-components')?.scrollIntoView({ behavior: 'smooth' })}>Stack by component</button>
       </nav>
+      </>)}
 
-      {techLayers.map(([id, name, desc, items]) => (
+      {show('layers') && part && (
+        <div className="chips layer-chips">
+          {techLayers.map(([id, name]) => <button key={id} className={'chip' + (layer === id ? ' on' : '')} onClick={() => setLayer(id)}>{name}</button>)}
+          <button className={'chip' + (layer === 'all' ? ' on' : '')} onClick={() => setLayer('all')}>All layers</button>
+        </div>
+      )}
+      {show('layers') && techLayers.filter(([id]) => layer === 'all' || layer === id).map(([id, name, desc, items]) => (
         <section key={id} id={'tl-' + id} className="ts-layer">
           <header><h3 className="sec-title">{name}</h3><p className="muted">{desc}</p></header>
           <div className="ts-grid">
@@ -167,7 +195,8 @@ export function Stack() {
         </section>
       ))}
 
-      <section id="ts-components" className="ts-layer">
+      {show('components') && (<>
+<section id="ts-components" className="ts-layer">
         <header><h3 className="sec-title">Candidate stack by component</h3><p className="muted">The proposed options inside each component, from its detailed design. Confirm against existing systems and operating capabilities.</p></header>
         <div className="comp-stack-grid">
           {[...internal].sort((a, b) => domainOrder.indexOf(a.domain) - domainOrder.indexOf(b.domain)).map((n) => {
@@ -193,6 +222,7 @@ export function Stack() {
           })}
         </div>
       </section>
+      </>)}
     </section>
   )
 }

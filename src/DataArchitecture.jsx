@@ -14,12 +14,22 @@ function NodeChip({ id }) {
   return <a className="node-chip" href={`#/node/${id}`} style={{ '--c': domains[n.domain].color }}>{n.label}</a>
 }
 
-export default function DataArchitecture() {
+export default function DataArchitecture({ part, dataset } = {}) {
+  const show = (k) => !part || part === k
   const [domain, setDomain] = useState('all')
-  const [sel, setSel] = useState('positions')
+  const [sel, setSel] = useState(byId[dataset] ? dataset : 'positions')
   const shown = datasets.filter((d) => domain === 'all' || d.domain === domain)
   const d = byId[sel]
-  const pick = (id) => { setSel(id); setDomain('all'); jump('da-datasets') }
+  // In the journey, datasets have their own page; elsewhere fall back to scrolling.
+  const pick = (id) => {
+    if (part) { window.location.hash = '#/datasets/' + id; return }
+    setSel(id); setDomain('all'); jump('da-datasets')
+  }
+  const choose = (id) => {
+    setSel(id)
+    if (part === 'datasets') window.history.replaceState(null, '', '#/datasets/' + id)
+  }
+  useEffect(() => { if (byId[dataset]) setSel(dataset) }, [dataset])
 
   useEffect(() => {
     const id = window.location.hash.slice(1)
@@ -28,7 +38,8 @@ export default function DataArchitecture() {
 
   return (
     <section className="da">
-      <p className="eyebrow">Data architecture</p>
+      {!part && (<>
+<p className="eyebrow">Data architecture</p>
       <h2>A modern data platform for the fund</h2>
       <p className="lede">
         Four paths for four speeds of data: real time for trading and live risk, time series for ticks, analytical for
@@ -43,9 +54,11 @@ export default function DataArchitecture() {
           <button key={id} onClick={() => jump(id)}>{t}</button>
         ))}
       </nav>
+      </>)}
 
       {/* Platform lanes */}
-      <section id="da-platform" className="da-sec">
+      {show('platform') && (<>
+<section id="da-platform" className="da-sec">
         <h3 className="sec-title">Platform architecture</h3>
         <p className="muted small">Snowflake’s responsibilities are marked <span className="sf-key">Snowflake</span>. Read each lane left to right.</p>
         <div className="lanes-wrap">
@@ -76,9 +89,11 @@ export default function DataArchitecture() {
           <dl>{governanceBar.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
         </div>
       </section>
+      </>)}
 
       {/* Snowflake */}
-      <section id="da-snowflake" className="da-sec sf-sec">
+      {show('snowflake') && (<>
+<section id="da-snowflake" className="da-sec sf-sec">
         <p className="eyebrow">Where Snowflake sits</p>
         <h3>The governed analytical platform, not the trading path</h3>
         <p className="lede">{snowflake.role}</p>
@@ -98,9 +113,11 @@ export default function DataArchitecture() {
           </div>
         </div>
       </section>
+      </>)}
 
       {/* Modelling */}
-      <section id="da-model" className="da-sec">
+      {show('modelling') && (<>
+<section id="da-model" className="da-sec">
         <h3 className="sec-title">Modelling approach by layer</h3>
         <div className="tbl-wrap">
           <table className="tbl model-tbl">
@@ -111,10 +128,12 @@ export default function DataArchitecture() {
         <h4 className="gap">Conventions every model follows</h4>
         <dl className="conventions">{modelConventions.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
       </section>
+      </>)}
 
       {/* Datasets */}
-      <section id="da-datasets" className="da-sec">
-        <h3 className="sec-title">Key datasets</h3>
+      {show('datasets') && (<>
+<section id="da-datasets" className="da-sec">
+        {!part && <h3 className="sec-title">Key datasets</h3>}
         <div className="chips">
           <button className={'chip' + (domain === 'all' ? ' on' : '')} onClick={() => setDomain('all')}>All</button>
           {Object.entries(dataDomains).map(([k, v]) => (
@@ -125,7 +144,7 @@ export default function DataArchitecture() {
           <ul className="ds-list">
             {shown.map((x) => (
               <li key={x.id}>
-                <button className={x.id === sel ? 'on' : ''} onClick={() => setSel(x.id)}>
+                <button className={x.id === sel ? 'on' : ''} onClick={() => choose(x.id)}>
                   <span className="ds-dom">{dataDomains[x.domain]}</span>
                   <b>{x.name}</b>
                   <small>{x.storage.map((s) => s[1].split(/[ (+]/)[0]).filter((v, i, a) => a.indexOf(v) === i).join(' · ')}</small>
@@ -175,17 +194,18 @@ export default function DataArchitecture() {
             <h4 className="gap">Data vendors</h4>
             <div className="examples">{d.vendors.map((v) => <span key={v} className="tag-plain">{v}</span>)}</div>
             <p className="muted small">Delivery: {d.delivery}</p>
-            {['instruments', 'corpactions', 'entities', 'calendars'].includes(d.id) && <button className="primary-link as-btn" onClick={() => jump('security-master')}>Read the security master deep dive →</button>}
-            {d.id === 'altdata' && <button className="primary-link as-btn" onClick={() => jump('alternative-data')}>Read the alternative data deep dive →</button>}
+            {['instruments', 'corpactions', 'entities', 'calendars'].includes(d.id) && <a className="primary-link as-btn" href="#/secmaster">Read the security master deep dive →</a>}
+            {d.id === 'altdata' && <a className="primary-link as-btn" href="#/altdata">Read the alternative data deep dive →</a>}
           </article>
         </div>
       </section>
+      </>)}
 
-      <SecMasterSection />
-      <AltDataSection />
+      {!part && <><SecMasterSection /><AltDataSection /></>}
 
       {/* Serving */}
-      <section id="da-serving" className="da-sec">
+      {show('serving') && (<>
+<section id="da-serving" className="da-sec">
         <h3 className="sec-title">Serving layers by use case</h3>
         <div className="tbl-wrap">
           <table className="tbl serving-tbl">
@@ -202,9 +222,11 @@ export default function DataArchitecture() {
           </table>
         </div>
       </section>
+      </>)}
 
       {/* Vendors */}
-      <section id="da-vendors" className="da-sec">
+      {show('vendors') && (<>
+<section id="da-vendors" className="da-sec">
         <h3 className="sec-title">Technology vendor landscape</h3>
         <div className="tech-grid">
           {techLandscape.map(([cat, rec, alts, where]) => (
@@ -235,6 +257,7 @@ export default function DataArchitecture() {
           </table>
         </div>
       </section>
+      </>)}
     </section>
   )
 }

@@ -79,7 +79,7 @@ const raw = [
   },
   {
     id: 'investorportal', label: 'Investor Portal', sub: 'Statements · documents', domain: 'channels', x: 1010, y: 40,
-    summary: 'Self-service access to investor documents and account information. Verition’s public site links to Northern Trust’s investor portal; confirm separately which administrator, transfer-agent, dealing and fund-accounting services are provided.',
+    summary: 'Self-service access to investor documents and account information. Verition’s website links to Northern Trust’s investor portal. Confirm separately the administration, TA, dealing and fund-accounting services and their data interfaces.',
     build: ['Integrate / confirm scope', 'Use the publicly linked portal where appropriate, then verify identity, data ownership, dealing, administrator and support responsibilities.'],
     responsibilities: ['Monthly statements and performance letters', 'Document vault: offering docs, K-1s, audited financials', 'Online subscription and redemption with e-signature', 'Investor-specific views respecting side letters'],
     components: [
@@ -88,7 +88,7 @@ const raw = [
     ],
     controls: ['MFA for every investor login', 'No bank-detail changes without call-back verification'],
     slas: [['Statements published', '≤ 10 business days after month-end']],
-    risks: [['Account takeover leading to redemption fraud', 'MFA, verified bank accounts only, call-back on changes'], ['Criminals impersonate the firm on social media and messaging apps (Verition publishes a fraud alert)', 'Never send wire instructions by message; publish verified contact routes; call back on any request to move money']],
+    risks: [['Account takeover leading to redemption fraud', 'MFA, verified bank accounts only, call-back on changes'], ['Verition publishes an impersonation fraud alert covering social and messaging channels', 'Use verified contact routes and independent call-back verification for money movement']],
     vendors: ['Administrator portals (Citco, SS&C)', 'Juniper Square', 'Allvue', 'Intralinks'],
   },
 
@@ -246,7 +246,7 @@ const raw = [
   {
     id: 'risk', label: 'Risk Engine', sub: 'VaR · stress · exposures', domain: 'risk', x: 500, y: 350,
     summary: 'Independent measurement of market, liquidity and counterparty risk, in tiers: each investment team watches its own risk intraday, central risk nets exposures across teams and sets limits, and an external provider independently checks the numbers. Feeds capital allocation, compliance and regulatory reporting.',
-    build: ['Hybrid', 'Photon is a reported licence and a candidate risk capability. Validate coverage and controls before assigning it a production role; retain independent verification.'],
+    build: ['Hybrid', 'Assess Photon, whose licence has been reported, against Verition’s actual instrument coverage, interfaces and control needs. Its production role remains to be confirmed; independent verification is required in the proposal.'],
     responsibilities: ['Exposures: gross, net, beta-adjusted, sector, country, factor', 'VaR (historical and Monte Carlo) and Expected Shortfall', 'Stress tests and historical scenarios such as 2008, March 2020, 2022 rates', 'Sensitivities: Greeks, DV01, CS01', 'Liquidity: days to liquidate at % ADV, redemption coverage', 'Counterparty exposure by prime broker and dealer', 'Limit monitoring and escalation'],
     components: [
       ['Pricing & sensitivities library', 'Values every instrument.', ['Full revaluation of derivatives', 'Greeks, DV01, CS01; shared with PMS what-if'], 'QuantLib / Numerix'],
@@ -262,7 +262,7 @@ const raw = [
     controls: ['VaR backtesting (Kupiec test) and model validation', 'Risk reports to the CRO, independent of PMs', 'Limit changes need maker-checker'],
     slas: [['Intraday exposure refresh', '≤ 1 min'], ['EOD VaR and stress', 'by 07:00'], ['Breach alert', '< 5 min']],
     risks: [['Model risk on non-linear or illiquid positions', 'Full revaluation and stress overlays'], ['Missing positions (e.g. OTC not booked)', 'Completeness check against IBOR'], ['Proxies hide risk', 'Documented proxy policy and review']],
-    vendors: ['Photon (licensed from Eisler Capital)', 'MSCI RiskMetrics / Barra', 'Axioma', 'Imagine', 'Bloomberg PORT / MARS', 'Numerix', 'ORE (open source)'],
+    vendors: ['Photon (reported licence; scope to confirm)', 'MSCI RiskMetrics / Barra', 'Axioma', 'Imagine', 'Bloomberg PORT / MARS', 'Numerix', 'ORE (open source)', 'In-house engines'],
   },
   {
     id: 'compliance', label: 'Compliance Engine', sub: 'Pre & post-trade rules', domain: 'risk', x: 500, y: 440,
@@ -410,14 +410,14 @@ const raw = [
     id: 'custodian', label: 'Custodians & CSDs', sub: 'Safekeeping · settlement', domain: 'external', external: true, x: 1270, y: 440,
     summary: 'Banks and central securities depositories that hold assets not held at the prime broker and settle trades.',
     responsibilities: ['Settle trades against instructions', 'Safekeep assets and collect income', 'Send holdings and cash statements'],
-    examples: ['BNY, State Street, Northern Trust', 'DTC, Euroclear, Clearstream'],
+    examples: ['BNY, State Street', 'DTC, Euroclear, Clearstream'],
     risks: [['Settlement fails and CSDR penalties', 'Pre-matching and fail monitoring']],
   },
   {
     id: 'admin', label: 'Fund Administrator', sub: 'Official NAV · often TA', domain: 'external', external: true, x: 1270, y: 610,
     summary: 'An independent third party that calculates the official NAV, keeps the books of record for investors and auditors, and often acts as transfer agent.',
     responsibilities: ['Official NAV and financial statements', 'Independent pricing and reconciliation', 'Transfer agency and KYC/AML', 'Investor statements'],
-    examples: ['Citco', 'SS&C GlobeOp', 'Northern Trust', 'State Street', 'Apex'],
+    examples: ['Citco', 'SS&C GlobeOp', 'State Street', 'Apex'],
     risks: [['Admin NAV differs from shadow NAV', 'Daily tie-out with tolerance and break workflow']],
   },
   {
@@ -576,7 +576,7 @@ const raw = [
     controls: ['No dealing until KYC is complete', 'Redemptions paid only to verified accounts', 'Wire instructions only through the administrator, never by email or messaging app', 'Gates applied per offering documents', 'Employee and internal-capital investments tracked as their own investor class'],
     slas: [['Dealing processed', 'on NAV date'], ['Statements issued', '≤ 10 business days after month-end']],
     risks: [['AML failure', 'Screening and periodic refresh'], ['Missed MFN obligations', 'Side-letter register']],
-    vendors: ['Citco', 'SS&C GlobeOp', 'Northern Trust', 'Allvue', 'Juniper Square'],
+    vendors: ['Citco', 'SS&C GlobeOp', 'Allvue', 'Juniper Square'],
   },
 
   // ───────────── Platform & security ─────────────
@@ -819,7 +819,7 @@ export const flows = [
     ],
   },
   {
-    id: 'drawdown', name: 'Team hits a drawdown limit', summary: 'A Fixed Income & Macro team falls 5% from its high-water mark in a rates sell-off. Capital is cut automatically and the CIO reviews.',
+    id: 'drawdown', name: 'Team hits a drawdown limit', summary: 'A macro team falls 5% from its high-water mark in a rates sell-off. Capital is reduced under an approved rule and the CIO reviews.',
     steps: [
       ['bus-risk', 'Intraday P&L and exposures update from live positions and prices.'],
       ['risk-cap', 'The team is down 5.1% from its high-water mark; the drawdown rule fires.'],
@@ -831,7 +831,7 @@ export const flows = [
     ],
   },
   {
-    id: 'ipo', name: 'New issue (IPO) participation', summary: 'An Equity L/S & Capital Markets team puts in for an IPO. The team is wall-crossed; the rest of the firm stays clean.',
+    id: 'ipo', name: 'New issue (IPO) participation', summary: 'An equity team submits an IPO indication. The team is wall-crossed; other teams remain eligible subject to surveillance and firm policy.',
     steps: [
       ['oms-comp', 'Wall-crossing is logged and the issuer restricted for the crossed team only. New-issue eligibility (FINRA 5130/5131) is checked per fund.'],
       ['pms-oms', 'The PM sizes an indication of interest across funds.'],

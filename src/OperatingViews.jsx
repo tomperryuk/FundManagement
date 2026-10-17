@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { nodeById, domains } from './systemData.js'
 import {
   strategyGroups, profile, pillars, groupNeeds, reviewChanges, openQuestions,
-  phases, lifecycle, dayTimeline, assetVariations, principleGroups, principles, photon,
+  phases, lifecycle, dayTimeline, assetVariations, principleGroups, principles, riskPlatform,
 } from './operatingModel.js'
 
 function NodeChip({ id }) {
@@ -20,32 +20,38 @@ const Chips = ({ ids }) => <div className="chip-row">{ids.map((id) => <NodeChip 
 
 const STATUS = { aligned: 'Already aligned', changed: 'Changed in this review', open: 'Open question' }
 
-export function BusinessFit() {
+export function BusinessFit({ part } = {}) {
+  const show = (k) => !part || part === k
   return (
     <section className="fit">
-      <p className="eyebrow">Business alignment review</p>
+      {!part && (<>
+<p className="eyebrow">Business alignment review</p>
       <h2>Fit to Verition’s operating model</h2>
       <p className="lede">
-        Public facts describe a collaborative multi-strategy, multi-manager firm with dynamic capital allocation and
-        multi-tier internal and external risk controls. The systems shown here are a proposed response, not a claim
-        about Verition’s current technology estate. Public facts, design inferences and items to confirm are identified
-        in Architecture Overview.
+        Verition’s public materials describe a collaborative multi-manager platform with dynamic capital allocation and
+        internal and external risk controls. This blueprint maps that context to proposed systems, interfaces and workflows.
+        Public facts are sourced; the current application estate and internal implementation still require confirmation.
       </p>
+      </>)}
 
-      <div className="fit-profile">
+      {show('assumptions') && (<>
+<div className="fit-profile">
         <dl className="facts">
           {profile.facts.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}
         </dl>
         <div className="fit-side">
-          <h4>Evidence boundary</h4>
-          <p>The public profile confirms nine office locations but the complete location list and legal-entity perimeter need internal confirmation. The displayed strategy-specific workflows are representative design cases.</p>
-          <h4>Public sources</h4>
-          <ul className="news">{profile.source.map(([name, url]) => <li key={name}><a href={url} target="_blank" rel="noreferrer">{name} ↗</a></li>)}</ul>
-          <p className="source">Profile values are dated as published: capital as of 1 Oct 2026; investment professionals as of 30 Sep 2026.</p>
+          <h4>Published office locations</h4>
+          <p>{profile.offices.join(' · ')}</p>
+          <h4>Business context</h4>
+          <ul className="news">{profile.news.map(([date, text]) => <li key={date}><span>{date}</span>{text}</li>)}</ul>
+          <h4>Sources</h4>
+          <ul className="news">{profile.sources.map(([label, url]) => <li key={url}><a href={url} target="_blank" rel="noreferrer">{label} ↗</a></li>)}</ul>
+          <p className="source">Profile checked 17 Oct 2026. Capital and staff figures retain their published dates. The Northern Trust portal link does not establish administrator or transfer-agent scope.</p>
         </div>
       </div>
 
       <h3 className="sec-title">Operating principles and what they demand</h3>
+      <p className="muted small">Principle statements summarise Verition’s public materials in our own words. Design responses are proposed architecture choices.</p>
       <div className="pillars">
         {pillars.map(([name, quote, demand, response, ids, status]) => (
           <article key={name} className={'pillar s-' + status}>
@@ -53,7 +59,7 @@ export function BusinessFit() {
               <h3>{name}</h3>
               <span className={'status s-' + status}>{STATUS[status]}</span>
             </header>
-            <blockquote>“{quote.replace(/^“|”$/g, '')}”</blockquote>
+            <blockquote>{quote.replace(/^“|”$/g, '')}</blockquote>
             <div className="pillar-body">
               <div><h4>What it demands</h4><p>{demand}</p></div>
               <div><h4>How the design responds</h4><p>{response}</p></div>
@@ -62,11 +68,13 @@ export function BusinessFit() {
           </article>
         ))}
       </div>
+      </>)}
 
-      <PhotonSection />
+      {show('risk') && <RiskPlatformSection />}
 
-      <h3 className="sec-title">What each strategy group needs</h3>
-      <p className="muted small">Strategy group names are Verition’s; typical strategies and instruments are illustrative for groups of this kind.</p>
+      {show('groups') && (<>
+<h3 className="sec-title">What each strategy group needs</h3>
+      <p className="muted small">Strategy group names follow Verition’s published categories. The strategies, instruments and workflows below illustrate requirements to validate with each group.</p>
       <div className="groups">
         {groupNeeds.map(([key, strategies, instruments, needs, ids]) => (
           <article key={key} className="group-card">
@@ -79,8 +87,10 @@ export function BusinessFit() {
           </article>
         ))}
       </div>
+      </>)}
 
-      <div className="fit-bottom">
+      {show('review') && (<>
+<div className="fit-bottom">
         <section>
           <h3 className="sec-title">Design responses in this reference architecture</h3>
           <ol className="changes">{reviewChanges.map((x) => <li key={x}>{x}</li>)}</ol>
@@ -92,28 +102,33 @@ export function BusinessFit() {
           </dl>
         </section>
       </div>
+      </>)}
     </section>
   )
 }
 
 // ───────────────────────── Trade lifecycle ─────────────────────────
 
-export function Lifecycle() {
+export function Lifecycle({ part } = {}) {
+  const show = (k) => !part || part === k
   const [i, setI] = useState(0)
   const [group, setGroup] = useState('equity')
   const s = lifecycle[i]
 
   return (
     <section className="lc">
-      <p className="eyebrow">Trade lifecycle</p>
+      {!part && (<>
+<p className="eyebrow">Trade lifecycle</p>
       <h2>From idea to investor report</h2>
       <p className="lede">
         Twelve stages across four phases, with the systems, messages, controls, exceptions and service levels at each
         one, and how the stage differs for each strategy group. Times and service levels are targets for discussion,
         not verified requirements; calibrate them from strategy latency, venue cut-offs, control obligations and current systems.
       </p>
+      </>)}
 
-      <div className="lc-phases">
+      {show('stages') && (<>
+<div className="lc-phases">
         {phases.map((p) => (
           <div key={p} className="lc-phase">
             <h4>{p}</h4>
@@ -177,8 +192,10 @@ export function Lifecycle() {
           <button disabled={i === lifecycle.length - 1} onClick={() => setI(i + 1)}>{i < lifecycle.length - 1 ? lifecycle[i + 1].step : 'Next'} →</button>
         </div>
       </article>
+      </>)}
 
-      <div className="lc-lower">
+      {show('day') && (<>
+<div className="lc-lower">
         <section>
           <h3 className="sec-title">A day on the platform</h3>
           <p className="muted small">Times in US Eastern (daylight time); they shift by an hour around clock changes.</p>
@@ -193,8 +210,10 @@ export function Lifecycle() {
           </ol>
         </section>
       </div>
+      </>)}
 
-      <section>
+      {show('instruments') && (<>
+<section>
         <h3 className="sec-title">How the lifecycle differs by instrument</h3>
         <div className="tbl-wrap">
           <table className="tbl assets">
@@ -203,16 +222,18 @@ export function Lifecycle() {
           </table>
         </div>
       </section>
+      </>)}
     </section>
   )
 }
 
 // ───────────────────────── Design principles ─────────────────────────
 
-export function Principles() {
+export function Principles({ part } = {}) {
   return (
     <section className="pr">
-      <p className="eyebrow">Design principles</p>
+      {!part && (<>
+<p className="eyebrow">Design principles</p>
       <h2>How the platform is designed</h2>
       <p className="lede">
         Seventeen principles. The first five come straight from the business model; the rest are the architecture,
@@ -224,7 +245,8 @@ export function Principles() {
           <button key={id} onClick={() => document.getElementById('pg-' + id)?.scrollIntoView({ behavior: 'smooth' })}>{name}</button>
         ))}
       </nav>
-      {principleGroups.map(([id, name, desc]) => (
+      </>)}
+      {principleGroups.filter(([id]) => !part || part === id).map(([id, name, desc]) => (
         <section key={id} id={'pg-' + id} className="pr-group">
           <header>
             <h3 className="sec-title">{name}</h3>
@@ -253,34 +275,34 @@ export function Principles() {
   )
 }
 
-// ───────────────────────── Photon ─────────────────────────
+// ───────────────────────── Risk platform integration ─────────────────────────
 
-export function PhotonSection() {
+export function RiskPlatformSection() {
   useEffect(() => {
-    if (window.location.hash === '#photon') document.getElementById('photon')?.scrollIntoView({ block: 'start' })
+    if (window.location.hash === '#risk-platform') document.getElementById('risk-platform')?.scrollIntoView({ block: 'start' })
   }, [])
   return (
-    <section className="photon" id="photon">
-      <header className="photon-head">
+    <section className="risk-platform" id="risk-platform">
+      <header className="risk-platform-head">
         <div>
-          <p className="eyebrow">Licensed platform</p>
+          <p className="eyebrow">Photon · reported licence · proposed integration</p>
           <h3>Where Photon fits</h3>
-          <p className="lede">{photon.thesis}</p>
+          <p className="lede">{riskPlatform.thesis}</p>
         </div>
         <a className="primary-link" href="#/node/risk">Open the Risk Engine design →</a>
       </header>
 
-      <div className="photon-grid">
-        <dl className="photon-facts">
-          {photon.facts.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}
+      <div className="risk-platform-grid">
+        <dl className="risk-platform-facts">
+          {riskPlatform.facts.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}
         </dl>
         <div>
-          <h4>Footprint on the reference architecture</h4>
-          <table className="tbl photon-fit">
+          <h4>Candidate role on the reference architecture</h4>
+          <table className="tbl risk-platform-fit">
             <thead><tr><th>Component</th><th>Candidate role to validate</th><th>Proposed ownership boundary</th></tr></thead>
             <tbody>
-              {photon.fit.map(([id, role, outside]) => (
-                <tr key={id} className={photon.primary.includes(id) ? 'primary' : ''}>
+              {riskPlatform.fit.map(([id, role, outside]) => (
+                <tr key={id} className={riskPlatform.primary.includes(id) ? 'primary' : ''}>
                   <td><NodeChip id={id} /></td><td>{role}</td><td className="muted">{outside}</td>
                 </tr>
               ))}
@@ -289,31 +311,31 @@ export function PhotonSection() {
         </div>
       </div>
 
-      <div className="photon-cols">
+      <div className="risk-platform-cols">
         <div>
           <h4>Integration</h4>
           <table className="tbl"><tbody>
-            {photon.interfaces.map(([dir, id, what]) => (
+            {riskPlatform.interfaces.map(([dir, id, what]) => (
               <tr key={dir + id}><td><span className={'dir d-' + dir.toLowerCase()}>{dir}</span></td><td><NodeChip id={id} /></td><td>{what}</td></tr>
             ))}
           </tbody></table>
         </div>
         <div>
           <h4>Potential benefits to test</h4>
-          <ul className="checks">{photon.strengths.map((x) => <li key={x}>{x}</li>)}</ul>
-          <h4 className="gap">Questions for the Photon team</h4>
-          <ol className="changes">{photon.questions.map((x) => <li key={x}>{x}</li>)}</ol>
+          <ul className="checks">{riskPlatform.strengths.map((x) => <li key={x}>{x}</li>)}</ul>
+          <h4 className="gap">Questions for the Photon team and control owners</h4>
+          <ol className="changes">{riskPlatform.questions.map((x) => <li key={x}>{x}</li>)}</ol>
         </div>
       </div>
 
       <h4>Risks and how to handle them</h4>
       <div className="risks">
-        {photon.risks.map(([r, m]) => <div key={r} className="risk"><p className="r">{r}</p><p className="m">{m}</p></div>)}
+        {riskPlatform.risks.map(([r, m]) => <div key={r} className="risk"><p className="r">{r}</p><p className="m">{m}</p></div>)}
       </div>
 
       <p className="source">
-        Sources: {photon.sources.map(([t, u], i) => <span key={u}>{i > 0 && ' · '}<a href={u} target="_blank" rel="noreferrer">{t}</a></span>)}.
-        Terms of the licence and Photon’s internals are not public; the footprint above is a reference-design view to confirm with the Photon team.
+        Sources: {riskPlatform.sources.map(([label, url], i) => <span key={url}>{i > 0 && ' · '}<a href={url} target="_blank" rel="noreferrer">{label}</a></span>)}.
+        The licence is reported; the integration footprint, data feeds and control responsibilities above are proposals to validate.
       </p>
     </section>
   )
