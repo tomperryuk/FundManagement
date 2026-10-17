@@ -1,4 +1,6 @@
 import { domains } from './systemData.js'
+import FlowDiagram from './FlowDiagram.jsx'
+import { researchToProduction, liveTradingPath } from './designFlows.js'
 
 const layers = [
   ['Investment teams', 'PMs, analysts and quantitative researchers', 'Own investment decisions, research context and proposed risk.'],
@@ -95,6 +97,7 @@ export function Workflows({ part = 'research' }) {
     <article className="workflow-card" style={{ '--c': path.color }}>
       <h3>{path.title}</h3><ol>{path.steps.map(([title, detail], i) => <li key={title}><span>{i + 1}</span><div><b>{title}</b><p>{detail}</p></div></li>)}</ol><p className="workflow-note">{path.note}</p>
     </article>
+    <FlowDiagram flow={research ? researchToProduction : liveTradingPath} />
     <div className="workflow-handoff"><h3>{research ? 'Hand-off into trading' : 'Feedback into research'}</h3><p>{research ? 'The PM owns the investment decision. Pass the thesis or signal version, approved data provenance, target exposure, mandate and limits into portfolio construction. Market release requires the trading control gates.' : 'Return fill quality, transaction costs, attribution, realised risk and operational exceptions to the investment team. Reassess the thesis, model assumptions and capacity before increasing scale.'}</p><a href={research ? '#/workflows/trading' : '#/workflows/research'}>{research ? 'Continue to trading workflow →' : 'Return to research workflow →'}</a></div>
     <h3 className="sec-title">Explore the supporting design</h3>
     <div className="workflow-links">{(research ? [['#/node/research', 'Research platform', 'Workbench, reproducibility, signal promotion and options.'], ['#/altdata', 'Alternative data', 'Approval, licensing, onboarding and point-in-time features.'], ['#/datasets', 'Governed datasets', 'Ownership, quality, history and serving.']] : [['#/lifecycle/stages', 'Detailed trade lifecycle', 'Twelve stages with owners, controls and exceptions.'], ['#/map', 'Platform map', 'Trace a trade from idea through settlement.'], ['#/node/recon', 'Reconciliation', 'Break ownership, resolution and independent records.']]).map(([url, title, detail]) => <a key={url} href={url}><b>{title} →</b><span>{detail}</span></a>)}</div>

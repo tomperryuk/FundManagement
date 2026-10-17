@@ -3,14 +3,18 @@ import { useMemo, useState } from 'react'
 const terms = [
   // Research & data
   ['Research & data', 'Alternative data', 'Non-traditional datasets (for example, web activity, transactions or geolocation) used alongside conventional market and company data. Use requires documented licensing, permitted purpose, privacy review and point-in-time controls.'],
+  ['Research & data', 'Availability time', 'When a fact first became usable by the firm, as opposed to when it applies. Historical simulations may only use versions available by the decision cutoff.'],
   ['Research & data', 'Backtest', 'A historical simulation of a strategy using past data. A credible backtest accounts for costs, liquidity, timing, universe changes and biases; it does not establish future performance.'],
   ['Research & data', 'Data lineage', 'The traceable path from a source through transformations and versions to the research, signal, report or decision that consumed it.'],
   ['Research & data', 'Data vintage', 'The exact version of a dataset that was available at a particular historical time, including later corrections where relevant. It helps reproduce what a researcher or model could actually have known.'],
+  ['Research & data', 'Effective time', 'When a fact applies in the real world, such as the period a financial result covers. It differs from availability time, which is when the firm could first use it.'],
   ['Research & data', 'Entitlement', 'A permission to access or use a dataset, based on its licence, user, team, purpose, geography or redistribution rules. Technical access alone does not grant legal usage rights.'],
+  ['Research & data', 'Experiment record', 'A record linking dataset versions, availability cutoffs, code, parameters and results to a research run, so the result can be reproduced and audited.'],
   ['Research & data', 'Feature', 'A model input derived from raw data, such as a return, spread, estimate revision or activity measure. Features need definitions, timestamps, versions and quality checks.'],
   ['Research & data', 'Hypothesis', 'A testable investment explanation for why an asset may be mispriced, what could change that view, and what evidence would invalidate it.'],
   ['Research & data', 'Look-ahead bias', 'A research error where a test uses information before it would have been available in real time, making historical results appear better than an implementable strategy.'],
   ['Research & data', 'MNPI', 'Material non-public information. Information controls restrict who can access or trade affected securities, issuers or deals, according to compliance policy.'],
+  ['Research & data', 'Model and artifact registry', 'A versioned store of approved models, code and parameters, with who approved them and where they are deployed.'],
   ['Research & data', 'Point-in-time data', 'Data preserved as it was known at a historical decision time, rather than silently replaced by corrected or subsequently published values.'],
   ['Research & data', 'Provenance', 'Evidence of where data or an analytical result came from, how it was produced, and which versions, transformations and approvals were involved.'],
   ['Research & data', 'Research reproducibility', 'The ability to recreate an analysis or signal from its recorded code, parameters, environment, data vintages and instrument universe.'],

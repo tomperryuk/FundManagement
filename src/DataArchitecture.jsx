@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import Modal from './Modal.jsx'
 import Tech from './Tech.jsx'
+import FlowDiagram from './FlowDiagram.jsx'
+import { pointInTime, teamIsolation, deployment, deploymentNote } from './designFlows.js'
 import { nodeById, domains } from './systemData.js'
 import {
   stages, lanes, governanceBar, snowflake, modelLayers, modelConventions,
@@ -105,6 +107,7 @@ export default function DataArchitecture({ part, dataset } = {}) {
             ))}
           </div>
         </div>
+        <p className="small"><b>Ultra-low-latency strategies</b> use dedicated execution infrastructure and publish events asynchronously into this platform. See the <a href="#/workflows/trading">live trading path</a>.</p>
         <div className="gov-bar">
           <b>Governance across every path</b>
           <dl>{governanceBar.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
@@ -133,6 +136,14 @@ export default function DataArchitecture({ part, dataset } = {}) {
             <p className="small"><a className="primary-link" href="#/node/lake/d1">See the platform decision: Snowflake vs Databricks vs self-run →</a></p>
           </div>
         </div>
+        <h3 className="sec-title gap">Illustrative AWS and Snowflake deployment</h3>
+        <div className="tbl-wrap">
+          <table className="tbl">
+            <thead><tr><th>Logical component</th><th>Candidate technology</th><th>Note</th></tr></thead>
+            <tbody>{deployment.map(([c, t, n]) => <tr key={c}><th>{c}</th><td><Tech>{t}</Tech></td><td className="muted">{n}</td></tr>)}</tbody>
+          </table>
+        </div>
+        <p className="small muted">{deploymentNote}</p>
       </section>
       </>)}
 
@@ -150,6 +161,16 @@ export default function DataArchitecture({ part, dataset } = {}) {
         <dl className="conventions">{modelConventions.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
       </section>
       </>)}
+
+      {show('pit') && <section id="da-pit" className="da-sec">
+        <FlowDiagram flow={pointInTime} />
+        <p className="small">Where this applies: <a href="#/datasets">fundamentals, alternative data and prices</a> keep every version; the <a href="#/secmaster">security master</a> applies it to corporate actions; <a href="#/data/modelling">the modelling approach</a> stores it as valid, recorded and availability times.</p>
+      </section>}
+
+      {show('teams') && <section id="da-teams" className="da-sec">
+        <FlowDiagram flow={teamIsolation} />
+        <p className="small">Who decides what each team may see: <a href="#/org/forums">Data governance council</a> and the <a href="#/principles">design principles</a> on team confidentiality.</p>
+      </section>}
 
       {/* Datasets */}
       {show('datasets') && (<>

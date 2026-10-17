@@ -1093,3 +1093,26 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 .tt:hover, .tt:focus-visible { border-bottom-style: solid; background: color-mix(in srgb, var(--accent) 14%, transparent); outline: none; }
 .tt-pop { position: fixed; z-index: 200; padding: 8px 11px; background: var(--navy, #0b1b3b); color: #fff; font-size: .8rem; line-height: 1.4; border-radius: 3px; box-shadow: 0 6px 20px rgba(0, 0, 0, .35); pointer-events: none; opacity: 0; visibility: hidden; transition: opacity .12s; font-family: var(--body, inherit); font-weight: 400; text-transform: none; letter-spacing: 0; }
 .tt-pop.on { opacity: 1; visibility: visible; }
+
+/* Flow diagrams */
+.flow-diagram { margin: 26px 0 0; padding: 0; }
+.flow-row { --t: var(--accent); border: 1px solid var(--border); border-left: 4px solid var(--t); background: var(--surface); padding: 12px 14px; }
+.flow-row.tone-data { --t: #2b8a9b; } .flow-row.tone-work { --t: #7a5ea8; } .flow-row.tone-control { --t: #b9772b; } .flow-row.tone-shared { --t: #1961ac; } .flow-row.tone-live { --t: #b33a3a; }
+.flow-row h4 { margin: 0 0 10px; font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.flow-row ol { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 26px; }
+.flow-row li { position: relative; flex: 1 1 150px; min-width: 0; }
+.flow-row li + li::before { content: '→'; position: absolute; left: -19px; top: 12px; color: var(--t); font-weight: 700; }
+.flow-row ol.parallel li + li::before { content: none; }
+.flow-row ol.parallel { gap: 8px 12px; }
+.flow-row li > a, .flow-row li > div { display: grid; gap: 2px; height: 100%; padding: 8px 10px; border: 1px solid var(--border-2); background: var(--bg-2); color: var(--text); text-decoration: none; }
+.flow-row li > a:hover { border-color: var(--t); }
+.flow-row li b { font: 600 .84rem var(--display); }
+.flow-row li span { font-size: .76rem; color: var(--muted); line-height: 1.35; }
+.flow-between, .flow-loop { margin: 6px 0; font-size: .8rem; color: var(--muted); display: flex; gap: 8px; align-items: baseline; }
+.flow-between span, .flow-loop span { color: var(--accent); font-weight: 700; }
+.flow-callout { margin-top: 12px; border-left: 3px solid var(--accent); background: var(--bg-2); padding: 10px 14px; font-size: .86rem; }
+@media (max-width: 760px) {
+  .flow-row ol { flex-direction: column; gap: 22px; }
+  .flow-row li + li::before { content: '↓'; left: 12px; top: -19px; }
+  .flow-row ol.parallel { gap: 8px; }
+}
