@@ -109,7 +109,8 @@ export function Lifecycle() {
       <h2>From idea to investor report</h2>
       <p className="lede">
         Twelve stages across four phases, with the systems, messages, controls, exceptions and service levels at each
-        one, and how the stage differs for each strategy group.
+        one, and how the stage differs for each strategy group. Times and service levels are targets for discussion,
+        not verified requirements; calibrate them from strategy latency, venue cut-offs, control obligations and current systems.
       </p>
 
       <div className="lc-phases">
@@ -276,7 +277,7 @@ export function PhotonSection() {
         <div>
           <h4>Footprint on the reference architecture</h4>
           <table className="tbl photon-fit">
-            <thead><tr><th>Component</th><th>Photon’s likely role</th><th>Stays outside Photon</th></tr></thead>
+            <thead><tr><th>Component</th><th>Candidate role to validate</th><th>Proposed ownership boundary</th></tr></thead>
             <tbody>
               {photon.fit.map(([id, role, outside]) => (
                 <tr key={id} className={photon.primary.includes(id) ? 'primary' : ''}>
@@ -298,7 +299,7 @@ export function PhotonSection() {
           </tbody></table>
         </div>
         <div>
-          <h4>Why it fits</h4>
+          <h4>Potential benefits to test</h4>
           <ul className="checks">{photon.strengths.map((x) => <li key={x}>{x}</li>)}</ul>
           <h4 className="gap">Questions for the Photon team</h4>
           <ol className="changes">{photon.questions.map((x) => <li key={x}>{x}</li>)}</ol>

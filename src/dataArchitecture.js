@@ -13,7 +13,7 @@ export const lanes = [
     cells: [
       ['OMS / EMS', 'FIX drop copies', 'Market data feeds', 'Settlement status'],
       ['Kafka (outbox, CDC, FIX bridge)', 'Schema Registry'],
-      ['Kafka Streams / Flink', 'IBOR position fold', 'Central P&L', 'Photon risk aggregation'],
+      ['Kafka Streams / Flink', 'IBOR position fold', 'Central P&L', 'Validated risk-engine adapter (Photon candidate)'],
       ['Kafka log (tiered storage)', 'Redis / in-memory caches', 'Postgres snapshots'],
       ['WebSocket gateway', 'gRPC APIs'],
       ['PMs & traders', 'Central risk', 'Capital Allocation'],
@@ -68,18 +68,18 @@ export const governanceBar = [
 // ───────────────────────── Snowflake ─────────────────────────
 
 export const snowflake = {
-  role: 'Snowflake is the governed analytical platform: the conformed (silver) and curated (gold) layers, the SQL and Python compute for research, finance, operations and reporting, and the sharing layer with vendors, the administrator and investors. It sits behind the real-time path, not on it. Data is kept in Apache Iceberg tables on the firm’s own S3 storage wherever practical, so other engines (Spark, Trino, DuckDB, Photon’s history jobs) can read the same tables and the engine choice stays reversible.',
+  role: 'Snowflake is the proposed governed analytical platform: conformed (silver) and curated (gold) layers, SQL and Python compute for research, finance, operations and reporting. It sits behind the real-time path, not on it. Consider open-format tables on firm-controlled object storage where they meet performance, governance and vendor-support needs; interoperability and data-sharing rights must be tested rather than assumed.',
   inScope: [
     'Conformed bitemporal model of instruments, prices, trades, positions, cash and books',
     'Gold marts for finance, performance, risk reporting, regulatory filings and investor reporting',
     'Point-in-time research datasets and the offline feature store',
     'Receiving vendor data through Snowflake Marketplace shares instead of files',
-    'Sharing curated data with the administrator, auditors and investors through secure shares',
-    'Daily and historical analytics on Photon and risk-engine results',
+    'Delivering approved data to administrator, auditors or investors through supported, contractually permitted interfaces',
+    'Daily and historical analytics on approved risk-engine results (Photon only if supported and licensed)',
   ],
   outScope: [
     'The order path, pre-trade compliance and real-time positions (Kafka, IBOR, OMS)',
-    'Live risk aggregation (Photon) and sub-second PM views',
+    'Live risk aggregation (Photon only if validated) and sub-second PM views',
     'Raw tick and quote storage and as-of joins at microsecond grain (kdb+ / ClickHouse)',
     'Systems of record for operational workflows (Postgres, vendor systems)',
   ],
@@ -107,7 +107,7 @@ export const snowflake = {
 
 // [layer, purpose, model pattern, why, technology]
 export const modelLayers = [
-  ['Bronze · raw', 'Exactly what arrived, forever.', 'Source-aligned tables, one per feed or topic. Append-only with load metadata (source, file, offset, loaded_at).', 'Replays and audits need the original. Never transform in place.', 'Iceberg on S3; Kafka topic archives'],
+  ['Bronze · raw', 'Preserve the received source record for its approved retention period.', 'Source-aligned append-only tables with load metadata (source, file, offset, loaded_at). Corrections append; access and deletion follow policy.', 'Replay and audit need lineage to what arrived, while licences, privacy rules and the records schedule define how long it can be retained.', 'Iceberg on S3; Kafka topic archives'],
   ['Silver · conformed', 'One version of each business entity, with history.', 'Canonical bitemporal model. Data Vault–style hubs, links and satellites for multi-source masters (instruments, entities, counterparties); append-only event tables for trades, cash and corporate actions; bitemporal snapshot tables for positions and prices.', 'Masters merge many vendors and change over time; events must stay immutable; every row carries valid time and recorded time so any past state can be rebuilt.', 'Iceberg tables managed by Snowflake; dbt'],
   ['Gold · curated', 'Shaped for a use case.', 'Kimball star schemas for finance, operations and risk reporting; regulatory marts that mirror filing structures; wide point-in-time feature tables for research; pre-aggregated tables for dashboards.', 'Consumers need simple, fast, well-documented tables; each mart has an owner and a contract.', 'Snowflake tables and Dynamic Tables; dbt; semantic layer'],
   ['Serving', 'Delivered how the consumer needs it.', 'APIs, caches, shares, semantic-layer metrics and extracts, generated from gold.', 'Applications should never query silver directly.', 'Semantic layer, data APIs, secure shares, Redis'],
@@ -259,7 +259,7 @@ export const datasets = [
     desc: 'Yield, credit and inflation curves, volatility surfaces and FX rates, as built and as published.',
     source: ['mdhub'], vendors: ['Bloomberg', 'LSEG', 'ICE', 'OptionMetrics', 'Cboe LiveVol', 'WM/Reuters FX fixes'],
     delivery: 'Feeds, files, APIs', volume: 'Hundreds of thousands of points per snapshot', latency: 'Intraday snapshots + EOD',
-    storage: [['Real-time', 'Kafka + in-memory for pricing', 'Photon and pricing libraries'], ['Analytical', 'Snowflake (points as rows, plus parameters)', 'History for risk and research']],
+    storage: [['Real-time', 'Kafka + in-memory for pricing', 'Approved risk engine and pricing libraries'], ['Analytical', 'Snowflake (points as rows, plus parameters)', 'History for risk and research']],
     model: { pattern: 'Versioned snapshot header + points; parameters stored for parametric surfaces', grain: 'Curve × snapshot × tenor (× strike)', keys: 'curve_id, snapshot_ts', temporal: 'Snapshot versions', tables: [['curve_snapshot', 'curve_id, snapshot_ts, method, inputs_ref, version'], ['curve_point', 'curve_id, snapshot_ts, tenor, rate, discount_factor'], ['vol_surface_point', 'surface_id, snapshot_ts, expiry, strike_or_delta, vol'], ['fx_rate', 'ccy_pair, ts, rate, source, fixing_type']] },
     serving: [['Live pricing', 'Kafka / in-memory'], ['Risk history and research', 'Snowflake']],
     quality: ['Arbitrage-free checks on surfaces', 'Curve fit residuals'], sensitivity: 'Licensed', retention: 'Permanent',
@@ -299,7 +299,7 @@ export const datasets = [
     desc: 'Factor exposures, factor returns, covariance and specific risk from vendor models.',
     source: ['risk'], vendors: ['MSCI Barra', 'Axioma (SimCorp)', 'Northfield', 'Bloomberg PORT'],
     delivery: 'Files; some cloud delivery', volume: 'Tens of millions of rows per day', latency: 'Daily before 06:00 ET',
-    storage: [['Analytical', 'Snowflake', 'History and joins'], ['Compute', 'Loaded into risk engine / Photon memory', 'Daily calculations']],
+    storage: [['Analytical', 'Snowflake', 'History and joins'], ['Compute', 'Loaded into approved risk engine', 'Daily calculations']],
     model: { pattern: 'Model-versioned facts; covariance stored as factor × factor', grain: 'Model × date × instrument × factor', keys: 'model_id, date, instrument_id, factor', temporal: 'Model version + date', tables: [['factor_exposure', 'model_id, date, instrument_id, factor, exposure'], ['factor_return', 'model_id, date, factor, return'], ['factor_covariance', 'model_id, date, factor_i, factor_j, cov'], ['specific_risk', 'model_id, date, instrument_id, specific_vol']] },
     serving: [['Risk engine', 'Bulk load'], ['Crowding and attribution', 'Snowflake gold']],
     quality: ['Coverage of held instruments', 'Covariance positive semi-definite'], sensitivity: 'Licensed', retention: 'Permanent',
@@ -321,7 +321,7 @@ export const datasets = [
     desc: 'Every order, amendment, child order and fill, with full state history and raw FIX.',
     source: ['oms', 'ems', 'fixgw'], vendors: ['OMS/EMS vendors (Enfusion, Eze, CRD, FlexTrade)'],
     delivery: 'Kafka events from vendor APIs and drop copies', volume: 'Millions of messages per day', latency: 'Real time',
-    storage: [['Real-time', 'Kafka trading.* topics', 'IBOR, Photon, post-trade'], ['Analytical', 'Snowflake via Snowpipe Streaming', 'Best-ex, TCA, surveillance, CAT-style audit'], ['Archive', 'Raw FIX journal on S3 (WORM)', 'Regulatory record']],
+    storage: [['Real-time', 'Approved trading event interfaces', 'IBOR, validated risk consumers, post-trade'], ['Analytical', 'Snowflake via governed ingestion', 'Best-ex, TCA, surveillance, audit analytics'], ['Archive', 'Approved FIX journal / communications archive', 'Record schedule and jurisdiction determine authoritative archive']],
     model: { pattern: 'Event-sourced: append-only order events + derived current-state and fill facts', grain: 'One row per order event; one row per fill', keys: 'order_id, event_seq; fill_id', temporal: 'Event time (UTC, µs) and recorded time', tables: [['order_event', 'order_id, event_seq, event_type, ts, user, qty, limit, status, parent_id, correlation_id'], ['order_current (derived)', 'order_id, book_id, instrument_id, side, qty, filled_qty, avg_px, status'], ['fact_execution', 'fill_id, order_id, child_id, ts, qty, price, venue, broker, liquidity_flag'], ['fix_message_raw', 'session, seq, msg_type, raw, ts']] },
     serving: [['Live blotters', 'OMS/EMS + Kafka'], ['TCA and best-ex', 'Snowflake gold + ticks'], ['Surveillance', 'Vendor surveillance feed'], ['Regulators', 'Archive and extracts']],
     quality: ['Fills reconcile to drop copies', 'No gaps in event_seq'], sensitivity: 'Confidential; MNPI-sensitive by team', retention: '7 years (books and records)',
@@ -350,18 +350,18 @@ export const datasets = [
     id: 'positions', name: 'Positions & tax lots', domain: 'positions',
     desc: 'Positions by fund, book, instrument and location, intraday and EOD, with lot-level cost.',
     source: ['ibor'], vendors: ['Internal (IBOR)', 'PB and custodian files for reconciliation'], delivery: 'Kafka events + EOD snapshots', volume: 'Hundreds of thousands of positions; millions of lots', latency: 'Real time; EOD snapshot',
-    storage: [['Real-time', 'Kafka + IBOR state stores', 'PMS, Photon, risk'], ['Operational', 'Postgres snapshots', 'APIs'], ['Analytical', 'Snowflake silver (bitemporal) and gold', 'Every report and analysis']],
+    storage: [['Real-time', 'Kafka + IBOR state stores', 'PMS and validated risk consumers'], ['Operational', 'Postgres snapshots', 'APIs'], ['Analytical', 'Snowflake silver (bitemporal) and gold', 'Every report and analysis']],
     model: { pattern: 'Bitemporal daily snapshot fact (periodic snapshot) + lot table; intraday kept as events', grain: 'Fund × book × instrument × location × as-of date', keys: 'as_of_date, fund_id, book_id, instrument_id, location_id', temporal: 'Bitemporal so restated positions keep the original', tables: [['fact_position_daily', 'as_of_date, fund_id, book_id, instrument_id, location_id, qty_td, qty_sd, cost_local, mv_local, mv_base, fx_rate, recorded_at'], ['tax_lot', 'lot_id, position_key, open_date, qty, cost, method'], ['position_event', 'event_id, position_key, delta_qty, cause (fill/CA/transfer), ts']] },
-    serving: [['PMs and Photon', 'Kafka streams'], ['Reporting, risk history, research', 'Snowflake gold'], ['Reconciliation', 'Snapshot extracts']],
+    serving: [['PMs and approved risk consumers', 'Kafka streams'], ['Reporting, risk history, research', 'Snowflake gold'], ['Reconciliation', 'Snapshot extracts']],
     quality: ['Rebuild from events equals snapshot', 'Three-way recon status'], sensitivity: 'Confidential; team-level entitlements', retention: '7 years+',
   }),
   ds({
-    id: 'risk', name: 'Risk results (incl. Photon)', domain: 'positions',
-    desc: 'Exposures, sensitivities, VaR, stress and liquidity results from Photon, the risk engine and the external provider.',
-    source: ['risk'], vendors: ['Photon (licensed)', 'MSCI / Axioma', 'External risk provider'], delivery: 'Kafka + bulk loads', volume: 'Billions of scenario values per day', latency: 'Intraday + EOD',
-    storage: [['Real-time', 'Photon + Kafka risk topics', 'Live limits'], ['Interactive', 'ClickHouse', 'Fast slice-and-dice'], ['Analytical', 'Snowflake gold', 'History, regulatory and investor reporting, external comparison']],
+    id: 'risk', name: 'Risk results', domain: 'positions',
+    desc: 'Exposures, sensitivities, VaR, stress and liquidity results from approved internal risk engines and independent providers. Photon is included only for validated, contractually usable outputs.',
+    source: ['risk'], vendors: ['Photon (licence reported; scope to confirm)', 'MSCI / Axioma', 'External risk provider'], delivery: 'Kafka + bulk loads', volume: 'Sizing assumption; profile with real workloads', latency: 'Intraday + EOD targets to validate',
+    storage: [['Real-time', 'Approved engine + Kafka risk topics', 'Live limits'], ['Interactive', 'ClickHouse', 'Fast slice-and-dice'], ['Analytical', 'Snowflake gold', 'History, regulatory and investor reporting, external comparison']],
     model: { pattern: 'Long fact of measures by dimension; scenario P&L vectors stored as arrays per position', grain: 'Run × book × measure × dimension', keys: 'run_id, book_id, measure, dim_type, dim_value', temporal: 'Run as-of with model version', tables: [['risk_run', 'run_id, engine (photon/internal/external), as_of, scope, model_version'], ['fact_risk_measure', 'run_id, book_id, measure, dim_type, dim_value, value'], ['scenario_pnl', 'run_id, position_key, scenario_set, pnl_vector (array)'], ['risk_compare (gold)', 'as_of, book_id, measure, internal_value, external_value, diff, within_tolerance']] },
-    serving: [['Live limits and PM views', 'Photon'], ['Interactive risk', 'ClickHouse'], ['Form PF / Annex IV, investor risk reports', 'Snowflake regulatory mart']],
+    serving: [['Live limits and PM views', 'Validated risk service / API'], ['Interactive risk', 'ClickHouse'], ['Form PF / Annex IV, investor risk reports', 'Snowflake regulatory mart']],
     quality: ['Completeness vs positions', 'Internal vs external within tolerance'], sensitivity: 'Confidential', retention: '7 years',
   }),
   ds({
@@ -416,7 +416,7 @@ export const datasets = [
   ds({
     id: 'investorsdata', name: 'Investors & capital activity', domain: 'investor',
     desc: 'Investor register, KYC status, subscriptions, redemptions and capital accounts.',
-    source: ['ta'], vendors: ['Administrator / TA (likely Northern Trust)'], delivery: 'Admin files or secure share', volume: 'Thousands of investors', latency: 'Per dealing date',
+    source: ['ta'], vendors: ['Administrator / transfer agent (to confirm)'], delivery: 'Approved admin interface or secure share', volume: 'Profile after investor scope is confirmed', latency: 'Per dealing date',
     storage: [['Operational', 'Administrator TA system', 'Register of record'], ['Analytical', 'Snowflake restricted database', 'IR analytics and liquidity planning']],
     model: { pattern: 'SCD2 investor dimension (PII masked); capital activity fact; holdings snapshot', grain: 'Investor version; dealing order; holding × date', keys: 'investor_id', temporal: 'Effective dates', tables: [['dim_investor', 'investor_id, type, domicile, kyc_status (PII masked)'], ['fact_capital_activity', 'order_id, investor_id, fund_id, class_id, type, amount, shares, dealing_date'], ['fact_holding_monthly', 'month_end, investor_id, class_id, series, shares, value']] },
     serving: [['IR and redemption forecasting', 'Snowflake (restricted)'], ['Investor portal', 'Administrator']],
@@ -444,14 +444,14 @@ export const datasets = [
 
 // [use case, consumers, latency, serving layer, data shape, datasets]
 export const servingLayers = [
-  ['Live trading & PM views', 'PMs, traders', '< 1 s', 'Kafka → Photon / IBOR → WebSocket gateway; Redis caches', 'Streams of deltas; current-state views', ['orders', 'positions', 'risk', 'prices']],
+  ['Live trading & PM views', 'PMs, traders', 'Proposed target; confirm SLO', 'Kafka → IBOR / validated risk API → WebSocket gateway; Redis caches', 'Streams of deltas; current-state views', ['orders', 'positions', 'risk', 'prices']],
   ['Pre-trade checks', 'OMS, compliance', '< 50 ms', 'In-memory caches in the compliance engine fed by events', 'Key-value lookups', ['positions', 'compliancedata', 'instruments', 'borrow']],
-  ['Intraday risk & limits', 'Central risk, CIO', 'seconds – 1 min', 'Photon; ClickHouse for slicing; limits service', 'Aggregates by dimension', ['risk', 'positions', 'capitaldata']],
+  ['Intraday risk & limits', 'Central risk, CIO', 'Seconds to 1 min (proposed)', 'Validated risk service; ClickHouse for slicing; limits service', 'Aggregates by dimension', ['risk', 'positions', 'capitaldata']],
   ['Quant research & backtesting', 'Quantitative Trading and other teams', 'interactive; large scans', 'kdb+ / ClickHouse for ticks; Snowpark or DuckDB over Iceberg; feature store', 'Point-in-time wide tables and time series', ['ticks', 'fundamentals', 'altdata', 'prices', 'riskmodel']],
   ['Discretionary research', 'Equity L/S, Event, Macro teams', 'interactive', 'Snowflake RESEARCH database + notebooks; shared research library; Cortex Search over notes', 'Curated tables and documents', ['fundamentals', 'altdata', 'indices', 'corpactions']],
   ['Operations & reconciliation', 'Operations', 'minutes', 'Operational systems + Snowflake ops mart', 'Exceptions and KPIs', ['recondata', 'cash', 'allocations']],
   ['Finance, NAV & performance', 'Fund accounting, CFO', 'daily', 'Snowflake finance mart + semantic layer + BI', 'Star schemas', ['gl', 'positions', 'prices']],
-  ['Capital allocation & management', 'CIO, senior management', 'intraday – daily', 'Snowflake gold + cockpit cache; Photon for live', 'Team-level aggregates', ['capitaldata', 'risk', 'positions']],
+  ['Capital allocation & management', 'CIO, senior management', 'Intraday to daily (proposed)', 'Snowflake gold + cockpit cache; validated risk feed for live measures', 'Team-level aggregates', ['capitaldata', 'risk', 'positions']],
   ['Regulatory reporting', 'Compliance, reporting', 'periodic; reproducible', 'Snowflake regulatory mart → filing tools', 'Regulation-shaped tables, frozen snapshots', ['regdata', 'risk', 'gl', 'positions', 'entities']],
   ['Investor reporting & transparency', 'IR, investors', 'monthly', 'Snowflake marts → report generation; secure shares for investors who ask for data', 'Curated extracts', ['gl', 'risk', 'investorsdata']],
   ['External data exchange', 'Administrator, auditors, vendors', 'daily', 'Snowflake Secure Data Sharing in and out; SFTP where required', 'Contracted shares', ['gl', 'positions', 'prices']],
@@ -462,7 +462,7 @@ export const servingLayers = [
 export const techLandscape = [
   ['Event streaming', 'Confluent Cloud', ['Amazon MSK', 'Redpanda', 'Solace'], 'Real-time path'],
   ['Stream processing', 'Kafka Streams / Flink', ['Confluent Flink', 'Spark Structured Streaming'], 'Real-time path'],
-  ['Real-time risk', 'Photon (licensed)', ['In-house on Flink', 'Vendor risk engines'], 'Real-time path'],
+  ['Real-time risk', 'Photon candidate, subject to diligence', ['In-house on Flink', 'Other vendor risk engines'], 'Real-time path'],
   ['Tick / time-series database', 'KX kdb+ or ClickHouse', ['OneTick', 'TimescaleDB', 'QuestDB'], 'Time-series path'],
   ['Object storage & table format', 'Amazon S3 + Apache Iceberg', ['Azure ADLS', 'Delta Lake'], 'Analytical path'],
   ['Cloud data platform', 'Snowflake', ['Databricks', 'Google BigQuery', 'Amazon Redshift'], 'Analytical path'],

@@ -79,7 +79,7 @@ const raw = {
         ['Administrator’s portal', 'Most funds', ['Data already there; low effort'], ['Limited branding and features']],
         ['Third-party investor portal', 'Strong IR focus', ['Better experience, CRM integration'], ['Another integration and data copy']],
         ['Build', 'Rarely', ['Full control'], ['Security and maintenance burden for low differentiation']],
-      ], 'Administrator’s portal', 'It is not where the edge is, and Verition already sends investors to Northern Trust’s portal. Minimise copies of investor PII.', 'IR needs a richer experience than the admin can offer.'],
+      ], 'Use the publicly linked Northern Trust portal, subject to scope review', 'Verition publicly links to a Northern Trust investor portal. Confirm which investor services it covers and minimise unnecessary copies of investor PII.', 'Investor relations needs a richer experience or a separate service is contractually required.'],
       ['How are documents delivered?', 'Statements and K-1s contain sensitive data.', [
         ['Portal-only with email notification', 'Default', ['No sensitive data in email', 'Download audit'], ['Investors must log in']],
         ['Encrypted email attachments', 'Investor insists', ['Convenient'], ['Hard to revoke; weak audit']],
@@ -198,7 +198,7 @@ const raw = {
         ['Full event sourcing', 'Positions, cash, P&L', ['State is a pure fold of events; perfect replay'], ['Hard schema evolution of history; steep learning curve']],
         ['Integration events via outbox', 'Most services', ['Pragmatic; services own their state'], ['Replay cannot rebuild a vendor’s internal state']],
         ['CDC only', 'Vendor systems you cannot change', ['No code changes'], ['Low-level row changes, not business events']],
-      ], 'Integration events via outbox', 'Use outbox events everywhere, full event sourcing only for the IBOR and P&L, and CDC to bridge vendors.', 'A domain needs reproducible state at arbitrary points in time.'],
+      ], 'Integration events via outbox', 'Use transactional outbox where supported, idempotent consumers and explicit replay rules. Choose event-sourced state only where the audit and rebuild benefits justify the added complexity; use CDC to bridge vendor systems.', 'A domain needs reproducible state at arbitrary points in time and can own event-schema evolution.'],
       ['Which serialisation format?', 'Schemas are the platform’s contracts.', [
         ['Protobuf', 'gRPC-heavy estates', ['Strong typing; same IDL as service APIs'], ['Evolution rules are looser than Avro’s']],
         ['Avro', 'JVM and data-lake heavy', ['Schema-registry native; compact'], ['Clunkier outside the JVM']],
@@ -233,7 +233,7 @@ const raw = {
         ['Event-driven, in-house', 'Promotion to production', ['Realistic fills, costs, borrow and capacity'], ['Build and maintain']],
         ['Vendor (Deltix, QuantConnect LEAN)', 'Small quant team', ['Ready to use'], ['Fit and extensibility limits']],
       ], 'Event-driven, in-house', 'Use vectorised backtests to screen ideas and require an event-driven backtest before any signal is promoted.', 'Strategies are low-turnover enough that vectorised results match.'],
-      ['How much do investment teams share?', 'Verition says it fosters cooperation and cross-pollination of ideas across strategies, “rather than employing a siloed approach”. Most multi-manager platforms do the opposite.', [
+      ['How much do investment teams share?', 'Verition publicly describes cooperation and cross-pollination rather than a siloed approach. Confidentiality, MNPI and contract boundaries still need explicit enforcement.', [
         ['Siloed per team', 'Platforms that compete teams against each other', ['Simple to entitle; protects each team’s IP'], ['Duplicated data spend and research', 'Contradicts a collaborative operating model']],
         ['Shared by default, walled by exception', 'Collaborative multi-strategy firms', ['Teams discover and reuse datasets, signals and research', 'One data licence serves many teams', 'Walls still applied for MNPI and wall-crossed deals'], ['Entitlement model must be precise', 'Needs clear attribution when one team uses another’s idea']],
         ['Fully open', 'Small single-office funds', ['No friction'], ['Cannot honour MNPI walls or team contracts']],
@@ -248,7 +248,7 @@ const raw = {
     shape: 'An event-driven service holding in-memory views of each team’s positions (from IBOR events) joined to live prices, exposing a query API and streams to the workstation. An optimiser service is called on demand. Order generation turns target-minus-current into proposed orders and submits them to the OMS. P&L comes from one central calculation shared with risk, so every screen shows the same number.',
     stack: [
       ['Core', 'Vendor PMS bundled with the OMS', 'Integrated compliance and order flow.'],
-      ['Analytics layer', 'Photon PM views + Kotlin services over IBOR events', 'Photon for live risk and exposure views; in-house services for anything it does not cover.'],
+      ['Analytics layer', 'Validated vendor risk views plus in-house services where gaps are proven', 'Assess Photon coverage and interfaces before assigning it a production role.'],
       ['P&L', 'Central P&L service', 'One number across PMS, risk and reporting.'],
       ['Optimiser', 'CVXPY + MOSEK; Axioma for discretionary teams', 'Constraint-rich portfolio construction.'],
       ['Cache', 'In-memory with snapshots to Postgres', 'Sub-second position views.'],
@@ -272,7 +272,7 @@ const raw = {
   risk: {
     shape: 'Streaming and batch together. Streaming: exposures from positions × prices × sensitivities, refreshed within a minute, with drawdown and gross/net limits checked continuously. Batch: EOD VaR, stress and liquidity on an elastic grid. Results land in a columnar risk store with dimensions (firm, strategy group, team, factor, instrument) so they can be sliced interactively. A limits service turns measures into breaches and escalations.',
     stack: [
-      ['Real-time risk aggregation', 'Photon (licensed from Eisler Capital)', 'Live cross-strategy trades, positions and risk; macro-first; tailored by Verition with former Eisler staff.'],
+      ['Real-time risk aggregation', 'Photon is a candidate (licence reported)', 'Confirm production capabilities, asset coverage, interfaces, service levels and rights before relying on it.'],
       ['Factor models', 'MSCI Barra or Axioma', 'Industry-standard risk language for CIO and investors; complements Photon for equity factor and crowding risk.'],
       ['Pricing library', 'QuantLib / ORE; Numerix for exotics', 'Full revaluation and Greeks.'],
       ['Grid', 'Kubernetes on spot instances (Ray or Armada)', 'Elastic EOD compute.'],
@@ -281,22 +281,22 @@ const raw = {
       ['Limits & workflow', 'Kotlin service + Postgres', 'Breaches, escalation, sign-off.'],
     ],
     decisions: [
-      ['What role does Photon play?', 'Verition licensed Eisler Capital’s Photon in February 2026: live tracking of trades, positions and risk exposures across strategies, strongest in macro.', [
-        ['Firm-wide real-time risk and PM analytics layer', 'Photon covers all four strategy groups after tailoring', ['One live risk picture across every team', 'Uses the people and system already acquired'], ['Gaps for equity factor, event and quant needs must be closed in Photon']],
-        ['Photon for macro and cross-asset; specialist tools elsewhere', 'Coverage gaps prove material', ['Best tool per strategy group', 'Lower delivery risk'], ['Several risk views to aggregate for the firm picture']],
-        ['Keep the reference build; use Photon as a source', 'Photon cannot scale or be extended', ['Full ownership'], ['Wastes the licence and the team that came with it']],
-      ], 'Firm-wide real-time risk and PM analytics layer', 'Make Photon the real-time tier of the risk system, fed from the event backbone, and close coverage gaps with Axioma/Barra for equity factors and the pricing library for convertibles. EOD VaR, stress and external verification stay separate unless Photon covers them.', 'A coverage review shows a strategy group cannot be served without a rebuild.'],
-      ['How does Photon get its data?', 'Photon must see every trade and position in real time without becoming a second book of record.', [
+      ['What role should Photon play?', 'Public reporting confirms a licence agreement but does not establish detailed capabilities or operating terms.', [
+        ['Integrate after coverage validation', 'Coverage, data rights, support and controls pass review', ['Build on the licensed capability where it fits', 'Limits initial dependency to proven areas'], ['Requires a fit-gap and control review']],
+        ['Use for selected strategy groups', 'Coverage is strong in some asset classes only', ['Preserves best-fit specialist workflows', 'Reduces replacement risk'], ['Requires central reconciliation across multiple tools']],
+        ['Keep as a limited research / comparison source', 'Production readiness or rights are not established', ['Low control risk while diligence continues'], ['Duplicates work and may defer benefits']],
+      ], 'Integrate after coverage validation', 'Start with read-only feeds and shadow comparisons. Expand only after control owners accept coverage, reconciliation, recovery and licensing evidence. Keep an independent check.', 'A formal product and operating review confirms a wider or narrower scope.'],
+      ['How could Photon receive data?', 'If adopted for production, Photon needs an approved, supportable source of data while preserving clear ownership of positions.', [
         ['Consume the event backbone', 'Default', ['Same events as IBOR, PMS and risk; replayable', 'No point-to-point feeds to maintain'], ['Photon needs an adapter to the canonical event model']],
         ['Point integrations to OMS and PBs', 'Fast start', ['Quick to wire up'], ['Fragile; diverges from IBOR; every new source is a project']],
         ['Photon keeps its own positions', 'Only if it is also the IBOR', ['Self-contained'], ['Two position truths that will drift']],
       ], 'Consume the event backbone', 'Feed Photon from the same events that build the IBOR and reconcile Photon positions to the IBOR daily.', 'Photon is adopted as the IBOR itself; then make it the single source and retire the other.'],
-      ['How is Photon’s licence de-risked?', 'Reporting says Eisler’s IP, including Photon, belongs to the founder, so Verition depends on licence terms and a small group of engineers.', [
-        ['Licence as is', 'Short-term', ['No negotiation'], ['Exposure to licensor changes and key people']],
-        ['Source access, modification rights and escrow, with internal knowledge transfer', 'Default', ['Verition can maintain and extend Photon itself'], ['Commercial negotiation; engineering time for knowledge transfer']],
-        ['Acquire the IP outright', 'Photon becomes core and strategic', ['Full control'], ['Cost; ownership questions raised by Eisler investors']],
-      ], 'Source access, modification rights and escrow, with internal knowledge transfer', 'Treat Photon as in-house software in practice: source in Verition’s repositories, Verition engineers paired with former Eisler staff, full documentation.', 'Photon becomes the core of the platform; consider acquiring the IP.'],
-      ['Which factor model?', 'Central risk uses factor exposures to set team limits and find crowding across teams.', [
+      ['What rights and continuity are needed for Photon?', 'Public reporting confirms a licence agreement but does not disclose terms, ownership, support or continuity arrangements.', [
+        ['Use the contracted service as-is', 'Capabilities are complete and service commitments are strong', ['Fastest start', 'Vendor owns maintenance'], ['Limited control and possible exit dependency']],
+        ['Negotiate operational protections', 'The capability is important to production', ['Clear support, data access, change, continuity and exit terms'], ['Commercial and legal effort']],
+        ['Build an alternative / exit path', 'Dependency or coverage risk is unacceptable', ['More control and bargaining power'], ['Duplicate cost and delivery effort']],
+      ], 'Negotiate operational protections', 'Make rights, support, recovery, data portability and termination / transition explicit before production dependency grows. Do not assume source-code ownership or staffing arrangements.', 'Contract review and product diligence establish the actual dependency profile.'],
+      ['Which factor model?', 'Central risk may use common factor exposures to compare teams and identify concentration; validate the desired model universe and reporting requirements.', [
         ['MSCI Barra', 'Investor and regulator familiarity', ['Industry standard; widely recognised'], ['Expensive; slower model updates']],
         ['Axioma', 'Flexibility', ['Custom and fast-updating models'], ['Also expensive']],
         ['In-house', 'Quant-heavy firms', ['Fits your factors'], ['Validation burden; not recognised externally']],
@@ -459,7 +459,7 @@ const raw = {
   ibor: {
     shape: 'An event-sourced position service. It consumes fills, allocations, corporate actions and settlement events, maintains position state in a stateful stream processor, snapshots to Postgres for queries and publishes PositionChanged events. Each day opens from the reconciled prior close. Position keys include fund, team/book, instrument and custodian/PB, so the same data serves trading and reconciliation.',
     stack: [
-      ['Processing', 'Kafka Streams (Flink at large scale)', 'Stateful, exactly-once aggregation of events.'],
+      ['Processing', 'Kafka Streams (Flink at large scale)', 'Stateful processing with idempotency, checkpoints, replay and reconciliation.'],
       ['State', 'RocksDB state stores + Postgres snapshots', 'Fast updates, queryable history.'],
       ['API', 'gRPC + position topics', 'Pull or stream positions.'],
       ['Lots', 'In-house lot engine', 'Fund-specific cost-basis policy.'],
@@ -471,7 +471,7 @@ const raw = {
         ['In-house event-sourced IBOR', 'Large multi-manager platforms', ['Real-time, consistent positions for every team; replayable'], ['Significant build and ownership']],
       ], 'In-house event-sourced IBOR', 'A multi-manager platform needs one real-time position truth across teams; vendor IBORs struggle at that scale.', 'You are early-stage; start on the platform IBOR and migrate later.'],
       ['Which stream processor?', 'Positions must be exactly right and recover by replay.', [
-        ['Kafka Streams', 'Up to mid scale', ['A library, not a cluster; exactly-once'], ['Rebalancing large state is slow']],
+        ['Kafka Streams', 'Up to mid scale', ['Simple deployment model; supports transactional processing'], ['Rebalancing large state is slow']],
         ['Flink', 'Large state, complex joins', ['Mature stateful processing at scale'], ['Cluster to operate']],
         ['Service + database', 'Low volume', ['Simple'], ['Throughput limits; replay is slow']],
       ], 'Kafka Streams', 'Start with Kafka Streams; move to Flink when state or join complexity demands it.', 'State restore times exceed your recovery objective.'],

@@ -115,9 +115,9 @@ function MapView({ flowId, setFlowId, step, setStep, kinds, setKinds, sel, setSe
           <p className="eyebrow">Reference architecture</p>
           <h2>End-to-end platform map</h2>
           <p className="lede">
-            Every system a multi-strategy, multi-manager fund runs, from market data to investor statements, and every
-            interface between them. Hover to trace connections, click to inspect, and open any component to drill into
-            its design.
+            Candidate components, ownership boundaries and interfaces for a multi-strategy, multi-manager platform.
+            This is a target-state reference, not a confirmed inventory of Verition’s current systems. Hover to trace
+            connections, click to inspect, and open a component for its options and trade-offs.
           </p>
         </div>
         <dl className="map-stats">

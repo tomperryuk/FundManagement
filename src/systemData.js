@@ -79,8 +79,8 @@ const raw = [
   },
   {
     id: 'investorportal', label: 'Investor Portal', sub: 'Statements · documents', domain: 'channels', x: 1010, y: 40,
-    summary: 'Self-service site for investors: capital account statements, performance, tax documents, subscription and redemption requests. Verition’s public site sends investors to Northern Trust’s investor portal, so this is provided by the administrator.',
-    build: ['Buy', 'Usually provided by the administrator or a portal vendor, branded for the manager.'],
+    summary: 'Self-service access to investor documents and account information. Verition’s public site links to Northern Trust’s investor portal; confirm separately which administrator, transfer-agent, dealing and fund-accounting services are provided.',
+    build: ['Integrate / confirm scope', 'Use the publicly linked portal where appropriate, then verify identity, data ownership, dealing, administrator and support responsibilities.'],
     responsibilities: ['Monthly statements and performance letters', 'Document vault: offering docs, K-1s, audited financials', 'Online subscription and redemption with e-signature', 'Investor-specific views respecting side letters'],
     components: [
       ['Document vault', 'Secure distribution of investor documents.', ['Per-investor entitlements', 'Download audit trail'], 'S3 + signed URLs'],
@@ -246,7 +246,7 @@ const raw = [
   {
     id: 'risk', label: 'Risk Engine', sub: 'VaR · stress · exposures', domain: 'risk', x: 500, y: 350,
     summary: 'Independent measurement of market, liquidity and counterparty risk, in tiers: each investment team watches its own risk intraday, central risk nets exposures across teams and sets limits, and an external provider independently checks the numbers. Feeds capital allocation, compliance and regulatory reporting.',
-    build: ['Hybrid', 'For Verition, the real-time aggregation layer is Photon, licensed from Eisler Capital. Buy factor models and pricing libraries around it; keep EOD VaR, stress and external verification independent.'],
+    build: ['Hybrid', 'Photon is a reported licence and a candidate risk capability. Validate coverage and controls before assigning it a production role; retain independent verification.'],
     responsibilities: ['Exposures: gross, net, beta-adjusted, sector, country, factor', 'VaR (historical and Monte Carlo) and Expected Shortfall', 'Stress tests and historical scenarios such as 2008, March 2020, 2022 rates', 'Sensitivities: Greeks, DV01, CS01', 'Liquidity: days to liquidate at % ADV, redemption coverage', 'Counterparty exposure by prime broker and dealer', 'Limit monitoring and escalation'],
     components: [
       ['Pricing & sensitivities library', 'Values every instrument.', ['Full revaluation of derivatives', 'Greeks, DV01, CS01; shared with PMS what-if'], 'QuantLib / Numerix'],
