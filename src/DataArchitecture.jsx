@@ -32,8 +32,11 @@ export default function DataArchitecture() {
       <h2>A modern data platform for the fund</h2>
       <p className="lede">
         Four paths for four speeds of data: real time for trading and live risk, time series for ticks, analytical for
-        history and reporting, and operational stores for systems of record. Snowflake runs the governed analytical path.
-        Below are the {datasets.length} key datasets, with where each one lives, its recommended data model and how it is served.
+        history and reporting, and operational stores for systems of record. Snowflake is the proposed governed analytical
+        path, never the trading system of record. Technologies and service levels below are design candidates to validate
+        against the current estate, data rights, workload and recovery requirements. Retention values are policy candidates,
+        subject to vendor licences, privacy rules and the approved records schedule. The {datasets.length} dataset cards
+        show proposed ownership, storage, quality checks and serving paths.
       </p>
       <nav className="jump">
         {[['da-platform', 'Platform'], ['da-snowflake', 'Where Snowflake sits'], ['da-model', 'Modelling approach'], ['da-datasets', `Key datasets (${datasets.length})`], ['security-master', 'Security master'], ['alternative-data', 'Alternative data'], ['da-serving', 'Serving layers'], ['da-vendors', 'Vendor landscape']].map(([id, t]) => (

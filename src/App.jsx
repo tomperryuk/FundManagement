@@ -13,6 +13,7 @@ const TABS = ['Architecture Overview', 'Platform Map', 'Business Fit', 'Data Arc
 
 export default function App() {
   const [tab, setTab] = useState(() => {
+    if (window.location.hash.startsWith('#/node/')) return 'Platform Map'
     if (window.location.hash === '#photon') return 'Business Fit'
     if (DATA_ANCHORS.includes(window.location.hash)) return 'Data Architecture'
     return TAB_PARAM[new URLSearchParams(window.location.search).get('tab')] || TABS[0]
@@ -42,7 +43,7 @@ export default function App() {
             <span className="brand-mark" aria-hidden="true" />
             <div>
               <h1>Fund Platform Blueprint</h1>
-              <p>Multi-strategy · multi-manager operating platform</p>
+              <p>Reference architecture · assumptions and decisions called out</p>
             </div>
           </div>
           <nav>
@@ -73,7 +74,9 @@ export default function App() {
 function Roadmap() {
   return (
     <section>
-      <h2>Delivery roadmap</h2>
+      <p className="eyebrow">Delivery sequence · gated, not date commitments</p>
+      <h2>Prove the workflow, then scale the platform</h2>
+      <p className="lede">Sequence depends on the current estate, product owners, contracts and control gaps. Start with a representative research-to-trade-to-reconciliation slice; expand when business and control owners accept the evidence.</p>
       <div className="timeline">
         {roadmap.map((r) => (
           <article className="card" key={r.phase}>

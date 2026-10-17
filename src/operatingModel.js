@@ -1,65 +1,58 @@
 // Business alignment, trade lifecycle and design principles.
-// Facts about Verition come from verition.com (as of October 2026); everything
-// else is reference design and should be confirmed with the business.
+// Firm-agnostic reference operating model and design assumptions.
 
 export const strategyGroups = {
-  fimacro: 'Fixed Income & Macro',
-  event: 'Event & Multi-Asset RV',
-  equity: 'Equity L/S & Capital Markets',
-  quant: 'Quantitative Trading',
+  fimacro: 'Macro & Fixed Income',
+  event: 'Event-Driven & Relative Value',
+  equity: 'Equity Long/Short',
+  quant: 'Systematic & Quantitative',
 }
 
 // ───────────────────────── Business fit ─────────────────────────
 
 export const profile = {
   facts: [
-    ['Model', 'Multi-strategy, multi-manager hedge fund'],
-    ['Founded', '2008'],
-    ['Capital', '$14.5bn (as of 1 Oct 2026)'],
-    ['Investment professionals', 'Over 500 (as of 30 Sep 2026)'],
-    ['Offices', '9 locations (public website)'],
-    ['Investor portal', 'Northern Trust'],
-  ],
-  source: [
-    ['Company profile', 'https://www.verition.com/'],
-    ['About Us', 'https://www.verition.com/about-us'],
-    ['Investment Philosophy', 'https://www.verition.com/investment-philosophy'],
+    ['Operating model', 'Multi-strategy, multi-manager hedge fund'],
+    ['Investment structure', 'Multiple teams operating within common fund controls'],
+    ['Capital allocation', 'Dynamic allocation based on opportunity and risk (design assumption)'],
+    ['Research model', 'Shared discovery with explicit information barriers (design assumption)'],
+    ['Investor services', 'Administrator and investor portal provider to be selected'],
   ],
 }
 
-// [pillar, their words, what it demands of the platform, how the design responds, nodes, status]
+// [principle, reference statement, what it demands, design response, nodes, status]
 export const pillars = [
-  ['Diversification', 'Combining a nucleus of diverse and niche-oriented strategies with more traditional strategies.',
+  ['Diversification', 'Combine distinct specialist strategies with broader, more established strategies.',
     'The platform must cover many asset classes and unusual instruments, and onboard a new team or product in weeks, not quarters.',
     'Multi-asset security master with an instrument setup workflow; team lifecycle in Capital Allocation; specialist EMSs per asset class; convertible and OTC pricing in risk.',
     ['secmaster', 'capital', 'ems', 'risk'], 'aligned'],
-  ['Integration', 'We foster a culture of cooperation, collaboration and innovation … rather than employing a “siloed” approach.',
+  ['Integration', 'Enable cooperation and cross-pollination while preserving legitimate confidentiality boundaries.',
     'Teams must be able to discover and reuse each other’s data, research and signals, while compliance can still wall off specific issuers and deals.',
-    'Changed from “isolated pods” to shared-by-default research with team-level walls; idea attribution so sharing is credited; entitlements by data class and issuer rather than by team.',
+    'Use shared-by-default research with team-level walls; record idea attribution; entitle by data class and issuer as well as team.',
     ['research', 'iam', 'compliance'], 'changed'],
-  ['Dynamic capital allocation', 'We allocate capital dynamically among Verition’s portfolios based on market opportunity and potential risk/reward.',
+  ['Dynamic capital allocation', 'Allocate capital across portfolios based on opportunity and potential risk/reward.',
     'Capital per team must be a live, auditable object that drives limits and sizing the moment it changes.',
-    'Added a Capital Allocation component: allocation model, performance analytics, drawdown rules, team lifecycle, payouts and a management cockpit. Capital changes rescale limits the same day.',
+    'Provide allocation models, performance analytics, drawdown rules, team lifecycle, payouts and management views. Define how approved capital changes flow into limits.',
     ['capital', 'pms', 'risk'], 'changed'],
   ['Trust but verify', 'Multi-tiered, iterative risk management system based on internal and external risk controls.',
     'Risk needs tiers (team, central, external) and independent checks of its own numbers.',
-    'Risk is now explicitly tiered: Photon as the real-time internal tier, central netting and limits, and an external verification step independent of Photon. Shadow NAV checks the administrator; three-way reconciliation checks the books.',
+    'Use team monitoring, central aggregation and independent challenge. Reconcile risk views to approved books and record valuation and accounting breaks.',
     ['risk', 'accounting', 'recon'], 'changed'],
-  ['Alignment with investors', 'With significant internal capital invested, Verition’s interests are aligned with its investors.',
+  ['Alignment with investors', 'Align manager and investor interests through appropriate investment and governance structures.',
     'Investor-grade controls everywhere: independent valuation, full shadow NAV, transparent reporting, internal capital tracked as its own investor class.',
     'Independent pricing, full shadow NAV, governed reporting mart, employee/internal-capital investor class in Investor Services.',
     ['mdhub', 'accounting', 'reporting', 'ta'], 'aligned'],
-  ['Leadership and fast decisions', 'Investment teams have direct access to Senior Management in order to facilitate fluid decision making in rapidly changing markets.',
+  ['Leadership and fast decisions', 'Give investment teams a clear route to senior decision-makers when markets or risks change quickly.',
     'Senior management needs one live, trusted picture of capital, P&L and risk, and a quick, recorded way to decide.',
     'Senior management cockpit in Capital Allocation; allocation and limit decisions recorded with rationale; same-day effect in limits.',
     ['capital', 'pmws'], 'changed'],
-  ['Global footprint', 'Offices in the US, London, Singapore, Dubai (DIFC) and Hong Kong.',
+  ['Global footprint', 'Support teams and markets across regions and legal jurisdictions.',
     'Follow-the-sun operations, regional regulators, low-latency access to Asian and European markets, and possibly data residency rules.',
-    'Added FCA, MAS, SFC and DFSA to regulators; follow-the-sun principle; regional execution where latency matters. Data residency is still open.',
+    'Confirm applicable regulators and entities; plan regional support and execution where market hours or latency require it. Data residency remains an open decision.',
     ['regulators', 'compliance', 'infra'], 'open'],
-  ['Investor protection', 'Verition publishes a fraud alert about criminals impersonating the firm on social media and messaging apps.',
+  ['Investor protection', 'Protect investors from impersonation, account takeover and fraudulent changes to payment instructions.',
     'Money movement must only follow verified channels, and the platform must never rely on email or chat for wire instructions.',
-    'Wire instructions only through the administrator; call-back on any bank change; impersonation added to investor-portal risks.',
+    'Use verified channels for money movement; independently verify bank-detail changes; log investor-portal activity.',
     ['ta', 'investorportal', 'settlement'], 'changed'],
 ]
 
@@ -84,18 +77,18 @@ export const groupNeeds = [
 ]
 
 export const reviewChanges = [
-  'Represent Photon as a licensed capability to assess and integrate; detailed scope and role remain subject to technical, operational and contractual diligence.',
-  'Added a Capital Allocation component, with interfaces to risk, PMS and accounting and two new flows: “Team hits a drawdown limit” and “New issue (IPO) participation”.',
-  'Reversed the research isolation recommendation: research is now shared by default with team-level walls, plus a new decision on crediting cross-team ideas.',
-  'Made risk explicitly multi-tiered (team, central, external) and added an external risk verification decision.',
-  'Added capital-markets wall-crossing to compliance and new-issue orders to the OMS, with a decision on team-level versus firm-wide restrictions.',
-  'Made regional regulatory obligations a discovery item; legal entities and applicable regimes must be confirmed before controls are finalised.',
-  'Recorded the public Northern Trust investor portal and added verified-channel controls for investor communications and money movement.',
-  'Changed “pod” to “investment team” throughout, which is Verition’s own term.',
+  'Share research and reusable data by default, with explicit issuer, deal, dataset and team confidentiality boundaries.',
+  'Treat team capital, mandate, limits, drawdown and performance attribution as a governed control plane for sizing and escalation.',
+  'Separate risk into investment-team, central and independent challenge views; reconcile inputs and explain differences.',
+  'Keep explicit ownership for orders, positions and accounting books; reconcile OMS / EMS, IBOR, prime broker and administrator records.',
+  'Use common workflow contracts with specialist execution, valuation and risk services where instrument or strategy needs differ.',
+  'Model research as a reproducible lifecycle and trading as a controlled stateful lifecycle, with realised outcomes feeding research and capital review.',
+  'Assess third-party risk and analytics platforms through capability, rights and operating-model diligence.',
+  'Select the investor portal and confirm administrator, transfer-agent and fund-accounting responsibilities separately.',
 ]
 
 export const openQuestions = [
-  ['Administrator', 'Northern Trust is the public investor portal. Confirm administrator, fund accounting, transfer-agent and dealing responsibilities separately; the portal alone does not establish these roles.'],
+  ['Administrator', 'Which providers handle fund administration, accounting, transfer agency, investor portal, dealing and KYC?'],
   ['Fee model', 'Pass-through expenses or a management and performance fee? This drives the fee engine and how costs are charged to teams.'],
   ['Prime brokerage', 'How many prime brokers, and what mix of physical versus synthetic (swap) financing?'],
   ['Current vendors', 'Which OMS, accounting and risk systems are in place today? The design should build on them unless there is a reason to replace.'],
@@ -468,7 +461,7 @@ export const principles = [
   {
     group: 'control', title: 'Design for the administrator', source: 'Control',
     statement: 'The administrator produces the official NAV; make that easy and check it every day.',
-    why: 'Investors rely on an independent administrator (here, likely Northern Trust). Clean feeds and fast tie-out avoid late NAVs.',
+    why: 'Investor reporting depends on timely, reconciled administrator outputs. Northern Trust is publicly linked as the investor portal; its other fund-service roles must be confirmed.',
     implications: ['Standard feeds of trades, positions and prices to the admin', 'Daily shadow NAV tie-out', 'Shared break workflow with the admin'],
     where: ['admin', 'accounting', 'recon'],
     avoid: 'Discovering differences at month-end.',
@@ -477,7 +470,7 @@ export const principles = [
   {
     group: 'operations', title: 'Follow the sun', source: 'Global footprint',
     statement: 'Operations and support hand over between Asia, Europe and the US so every market session has owners.',
-    why: 'With offices from Hong Kong and Singapore to Dubai, London and the US, something is always trading.',
+    why: 'A global footprint can create regional handovers, market-hour support needs and jurisdiction-specific obligations; confirm the actual office and legal-entity scope.',
     implications: ['Exception inbox with regional queues and handover notes', 'On-call coverage per region', 'Times and cut-offs shown in local and ET'],
     where: ['opsconsole', 'obs'],
     avoid: 'Asian breaks waiting for New York to wake up.',
@@ -528,45 +521,46 @@ export const photon = {
     ['Rebellion Research: Potential sale of Eisler Capital’s risk system Photon', 'https://www.rebellionresearch.com/potential-sale-of-eisler-capitals-risk-system-photon-raises-valuation-and-ownership-questions'],
     ['Hedgeweek: Eisler Capital said to be exploring sale of tech assets', 'https://www.hedgeweek.com/eisler-capital-said-to-be-exploring-sale-of-tech-assets/'],
   ],
-  // Map overlay: primary = Photon most likely realises this component; partial = Photon contributes or consumes.
-  primary: ['risk', 'pms'],
-  partial: ['pmws', 'capital'],
+  // These are candidate integration areas only; no detailed capability statement is public.
+  primary: [],
+  partial: ['risk', 'pms', 'pmws', 'capital'],
   thesis: 'The design reserves an integration point for Photon in real-time risk and PM analytics. Its actual placement depends on coverage, interfaces, service levels, data rights and control evidence. Keep official order, position, accounting and pre-trade control records with their accepted systems of record unless a formal replacement decision is made.',
   // [reference component, Photon's likely role, what stays outside Photon]
   fit: [
-    ['risk', 'Primary: real-time cross-strategy risk aggregation, especially macro (rates, FX, volatility, cross-asset scenarios).', 'EOD VaR / stress grid if Photon does not cover it; vendor equity factor model (Axioma or Barra) for Equity L/S crowding; external risk verification must stay independent of Photon.'],
-    ['pms', 'Primary: live positions, exposures and risk views for portfolio managers, and the analytics they use to size trades.', 'Order generation and allocation intent stay with the OMS/PMS core.'],
-    ['pmws', 'Partial: Photon’s screens likely become the risk and exposure panels in the workstation.', 'Order tickets and blotters stay with the OMS/EMS front ends.'],
-    ['capital', 'Partial: supplies intraday risk and P&L to drawdown rules and the management cockpit.', 'Capital, payouts and allocation decisions stay in Capital Allocation as the system of record.'],
-    ['ibor', 'Consumer: Photon needs a real-time position feed; it should not become a second book of record.', 'IBOR stays the golden position source; Photon positions reconciled to it daily.'],
-    ['compliance', 'Consumer of limits, supplier of exposures for post-trade checks.', 'Pre-trade checks stay in the OMS-embedded engine on the order path.'],
-    ['lake', 'Photon’s risk results land in the lakehouse for history, reporting and research.', 'Long-term history and regulatory archive.'],
+    ['risk', 'Candidate: assess suitability for live aggregation, scenarios, and team / central views.', 'Keep independent calculations or checks where required. Confirm model coverage, latency, lineage and controls.'],
+    ['pms', 'Candidate: assess whether it supports PM risk views and sizing workflows.', 'Order creation and allocation intent remain with the selected PMS / OMS until a governed replacement decision.'],
+    ['pmws', 'Candidate: assess screen integration and user workflow fit.', 'Do not assume Photon screens or APIs are available; trader order tickets remain on accepted execution controls.'],
+    ['capital', 'Candidate: assess whether validated risk outputs can inform drawdown and allocation review.', 'Capital decisions, payout terms and approvals remain in their governed workflow.'],
+    ['ibor', 'Potential consumer of position snapshots or events after the interface and reconciliation design is agreed.', 'Maintain one approved position source; do not create a second book without an explicit architecture decision.'],
+    ['compliance', 'Potential source of post-trade exposure data after control validation.', 'Pre-trade controls must remain on the synchronous order path and fail closed per policy.'],
+    ['lake', 'If the product exposes licensed, supportable outputs, store approved risk results for history and analysis.', 'Confirm retention, redistribution, data rights and the authoritative archive.'],
   ],
   // [direction, counterpart node, what flows]
+  // Proposed interface patterns only; exact Photon APIs and supported feeds are not public.
   interfaces: [
-    ['In', 'bus', 'Orders, fills, allocations and PositionChanged events (trading.*, positions.*)'],
+    ['In', 'bus', 'Candidate: orders, fills, allocations and position events if supported by the licensed interface'],
     ['In', 'mdhub', 'Real-time prices, curves and volatility surfaces; official EOD prices'],
     ['In', 'secmaster', 'Instrument terms and identifiers, mapped to the internal ID'],
     ['In', 'capital', 'Team capital and limit hierarchy'],
-    ['Out', 'pmws', 'Risk, exposure and P&L views for teams and senior management'],
+    ['Out', 'pmws', 'Candidate: approved risk / exposure outputs for PM and management views'],
     ['Out', 'capital', 'Intraday risk and drawdown measures'],
     ['Out', 'compliance', 'Exposures for leverage and concentration checks'],
     ['Out', 'lake', 'Risk results and snapshots for history and reporting'],
-    ['Check', 'ibor', 'Daily reconciliation of Photon positions to the IBOR'],
+    ['Check', 'ibor', 'Reconcile any Photon position view to the approved IBOR at an agreed control frequency'],
   ],
   strengths: [
-    'Built for the problem Verition has: live risk across many strategies and teams.',
-    'Macro-first design suits the Fixed Income & Macro group and cross-asset scenarios.',
-    'Comes with the people who built and ran it, which shortens integration.',
-    'Licensed and tailorable, so Verition can fit it to its own operating model.',
+    'Potential reuse of a licensed capability could reduce time to a live risk view if its coverage matches requirements.',
+    'If the reported trading-intelligence and risk functions are confirmed, assess value across the four strategy groups rather than assuming universal fit.',
+    'A proven integration surface and support model could reduce delivery effort; confirm with the product and engineering owners.',
+    'A tailored integration may fit the operating model, subject to licence scope and change rights.',
   ],
   risks: [
-    ['Licence, not ownership', 'Confirm source-code access or escrow, rights to modify and keep modifications, exclusivity, and what happens if the licensor changes hands.'],
-    ['Key-person dependency', 'Knowledge sits with a few former Eisler engineers. Pair them with Verition engineers, document the system, and make Photon part of the standard engineering process.'],
-    ['Macro-first fit', 'Check coverage for Equity L/S factor and crowding risk, convertibles and event risk, and quant volumes before retiring other tools.'],
-    ['Two sources of positions', 'If Photon keeps its own positions, they will drift from the IBOR. Feed it from the event backbone and reconcile daily.'],
-    ['Scale step-up', 'Verition runs $14.5bn and over 500 investment professionals; load-test Photon at peak trade and tick volumes.'],
-    ['Independence of checks', '“Trust but verify” needs an external risk check that does not depend on Photon’s numbers.'],
+    ['Licence and continuity', 'Review scope, permitted users / entities, data use, termination, support, source access, modification rights and continuity arrangements.'],
+    ['Operational dependency', 'Identify vendor and internal owners, support coverage, knowledge-transfer obligations, documentation and recovery responsibilities.'],
+    ['Coverage gaps', 'Test instrument and strategy coverage, including equity factors, event risk, convertibles and quant workload before replacing another tool.'],
+    ['Competing position views', 'Define whether the platform consumes or maintains positions; reconcile to the approved IBOR and OMS / accounting sources.'],
+    ['Capacity and service levels', 'Load-test against measured peak trade, price and position volumes; agree latency, recovery and support objectives.'],
+    ['Independence of checks', 'Keep independent controls and challenge calculations separate from the component being verified.'],
   ],
   questions: [
     'Does Photon include position keeping and P&L, or only risk on top of positions supplied to it?',

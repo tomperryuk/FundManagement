@@ -36,9 +36,9 @@ export function Options() {
       <p className="eyebrow">Sourcing options</p>
       <h2>Build, buy or license</h2>
       <p className="lede">
-        Four platform strategies scored against what matters to the firm, then broken down component by component so
-        you can see what each strategy means in practice. Adjust the weights to test your own priorities; the matrix
-        highlights the column for whichever strategy ranks first.
+        Four platform strategies scored against what matters to the firm, then broken down component by component.
+        The scores and effort bands are qualitative starting hypotheses, not vendor diligence, cost estimates or delivery
+        commitments. Adjust the weights to test priorities; the matrix highlights whichever strategy ranks first.
       </p>
 
       <div className="weights">
@@ -112,7 +112,7 @@ export function Options() {
           </tbody>
         </table>
       </div>
-      <p className="muted small">Edge: how much the component differentiates investment results or control. Effort: S under 3 months, M 3–9 months, L 9–18 months with a dedicated team.</p>
+      <p className="muted small">Edge: how much the component may differentiate investment results or control. Effort bands are directional only: S &lt;3 months, M 3–9 months, L 9–18 months with a dedicated team. Re-estimate after current-state discovery.</p>
     </section>
   )
 }
@@ -128,7 +128,7 @@ export function Stack() {
       <p className="eyebrow">Technology stack</p>
       <h2>The stack, layer by layer</h2>
       <p className="lede">
-        Every technology in the reference design: what it does, why it was chosen, the alternatives, and which
+        Candidate technologies in the reference design: what each does, why it is considered, the alternatives, and which
         components use it. Choose a component to highlight its technologies, or jump to its full design.
       </p>
 
@@ -168,7 +168,7 @@ export function Stack() {
       ))}
 
       <section id="ts-components" className="ts-layer">
-        <header><h3 className="sec-title">Stack by component</h3><p className="muted">The recommended stack inside each component, from its detailed design.</p></header>
+        <header><h3 className="sec-title">Candidate stack by component</h3><p className="muted">The proposed options inside each component, from its detailed design. Confirm against existing systems and operating capabilities.</p></header>
         <div className="comp-stack-grid">
           {[...internal].sort((a, b) => domainOrder.indexOf(a.domain) - domainOrder.indexOf(b.domain)).map((n) => {
             const d = designs[n.id]

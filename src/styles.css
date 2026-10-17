@@ -723,3 +723,53 @@ button.link:hover { text-decoration: underline; }
   .edge.current .line { animation: none; }
   * { transition: none !important; }
 }
+
+/* Architecture brief */
+.arch-overview > h2 { max-width: 920px; }
+.arch-evidence { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 22px 0 34px; }
+.arch-evidence article, .open-decision-grid article { min-width: 0; border: 1px solid var(--border); background: var(--surface); padding: 16px 18px; }
+.arch-evidence article { display: flex; flex-direction: column; align-items: flex-start; }
+.arch-evidence b { margin: 9px 0 4px; font-family: var(--display); font-size: 1.06rem; font-weight: 600; }
+.arch-evidence p, .open-decision-grid p { margin: 0 0 10px; color: var(--muted); font-size: .88rem; line-height: 1.55; }
+.arch-evidence a { margin-top: auto; font-size: .8rem; color: var(--accent); }
+.arch-evidence article > span:last-child { margin-top: auto; color: var(--muted); font-size: .78rem; }
+.evidence { display: inline-flex; border-radius: 2px; padding: 4px 7px; font-size: .65rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
+.evidence.fact { color: #245c46; background: #e5f2eb; }
+.evidence.inference { color: #175e6d; background: #e1f1f3; }
+.evidence.confirm { color: #805e1b; background: #f5eedc; }
+.arch-flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; border: 1px solid var(--border); background: var(--surface); }
+.arch-layer { min-width: 0; position: relative; padding: 18px 15px; border-right: 1px solid var(--border); border-top: 3px solid var(--c); }
+.arch-layer:last-child { border-right: 0; }
+.arch-index { display: block; color: var(--muted); font: 600 .66rem var(--display); letter-spacing: .12em; }
+.arch-layer h4 { margin: 9px 0 7px; font: 600 1rem var(--display); }
+.arch-layer b { display: block; font-size: .78rem; line-height: 1.4; }
+.arch-layer p { margin: 7px 0 0; color: var(--muted); font-size: .78rem; line-height: 1.5; }
+.arch-foundation { display: grid; grid-template-columns: minmax(180px, .32fr) 1fr; gap: 20px; align-items: center; background: var(--navy); color: #fff; padding: 14px 18px; }
+.arch-foundation b { font: 600 .85rem var(--display); }
+.arch-foundation span { color: #dce4ed; font-size: .8rem; line-height: 1.5; }
+.workflow-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.workflow-card { min-width: 0; border: 1px solid var(--border); border-top: 3px solid var(--c); background: var(--surface); padding: 18px 20px; }
+.workflow-card h3 { margin: 0 0 14px; font: 600 1.2rem var(--display); }
+.workflow-card ol { list-style: none; padding: 0; margin: 0; display: grid; }
+.workflow-card li { display: grid; grid-template-columns: 25px 1fr; gap: 10px; padding: 10px 0; border-top: 1px solid var(--border); }
+.workflow-card li > span { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; color: #fff; background: var(--c); font-size: .72rem; font-weight: 600; }
+.workflow-card li b { font: 600 .88rem var(--display); }
+.workflow-card li p { margin: 3px 0 0; color: var(--muted); font-size: .8rem; line-height: 1.5; }
+.workflow-note { margin: 12px 0 0; border-left: 2px solid var(--c); padding: 8px 10px; background: var(--bg-2); color: var(--text); font-size: .79rem; line-height: 1.55; }
+.open-decision-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.open-decision-grid b { display: block; margin-bottom: 6px; font: 600 .92rem var(--display); }
+.open-decision-grid p { margin: 0; }
+.arch-next { margin-top: 22px; padding: 14px 16px; border: 1px solid var(--border); background: var(--bg-2); color: var(--text); font-size: .86rem; line-height: 1.55; }
+.arch-overview .sec-title { margin-top: 36px; }
+@media (max-width: 1100px) {
+  .arch-flow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .arch-layer:nth-child(2n) { border-right: 0; }
+  .arch-layer:last-child { grid-column: 1 / -1; }
+}
+@media (max-width: 760px) {
+  .arch-evidence, .workflow-grid, .open-decision-grid { grid-template-columns: 1fr; }
+  .arch-flow { grid-template-columns: 1fr; }
+  .arch-layer, .arch-layer:nth-child(2n) { border-right: 0; border-bottom: 1px solid var(--border); }
+  .arch-layer:last-child { grid-column: auto; border-bottom: 0; }
+  .arch-foundation { grid-template-columns: 1fr; gap: 5px; }
+}
