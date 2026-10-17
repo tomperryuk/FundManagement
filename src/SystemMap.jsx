@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
+import Modal from './Modal.jsx'
+import Tech from './Tech.jsx'
 import { VIEW, domains, edgeKinds, zones, nodes, nodeById, edges, edgeById, flows } from './systemData.js'
 import { routeEdges } from './router.js'
 import { designs } from './designData.js'
-import { useChoices } from './choices.js'
+import { useChoices, useDecisionState } from './choices.js'
+import DecisionEditor from './DecisionEditor.jsx'
 import { riskPlatform } from './operatingModel.js'
 
 const ROUTES = routeEdges(nodes, edges, VIEW.w, VIEW.h)
@@ -60,6 +63,10 @@ function MapView({ flowId, setFlowId, step, setStep, kinds, setKinds, sel, setSe
   const [hover, setHover] = useState(null)
   const [playing, setPlaying] = useState(false)
   const [showPhoton, setShowPhoton] = useState(false)
+  const [mapMode, setMapMode] = useState(() => window.matchMedia('(max-width: 760px)').matches ? 'list' : 'diagram')
+  const [componentQuery, setComponentQuery] = useState('')
+  const [componentArea, setComponentArea] = useState('all')
+  const listedNodes = nodes.filter(n => (componentArea === 'all' || n.domain === componentArea) && [n.label, n.sub, n.summary, domains[n.domain].name].join(' ').toLowerCase().includes(componentQuery.trim().toLowerCase()))
   const flow = flows.find((f) => f.id === flowId)
 
   useEffect(() => {
@@ -100,7 +107,7 @@ function MapView({ flowId, setFlowId, step, setStep, kinds, setKinds, sel, setSe
   })
   const shownEdges = flow ? visibleEdges.filter((e) => e.kind !== 'ui' || hiEdges.has(e.id)) : visibleEdges
 
-  const pickFlow = (id) => { setFlowId(id === flowId ? null : id); setStep(0); setPlaying(false); setSel(null) }
+  const pickFlow = (id) => { setMapMode('diagram'); setFlowId(id === flowId ? null : id); setStep(0); setPlaying(false); setSel(null) }
   const toggleKind = (k) => {
     const next = new Set(kinds)
     next.has(k) ? next.delete(k) : next.add(k)
@@ -127,12 +134,14 @@ function MapView({ flowId, setFlowId, step, setStep, kinds, setKinds, sel, setSe
         </dl>
       </div>
 
-      <div className="toolbar">
+      <div className="map-help"><b>Explore components or trace a workflow.</b><span>In the diagram, select a box to inspect it, then use “Open detailed design”. Keyboard: focus a component and press Enter to open its design.</span></div>
+      <div className="toolbar-group view-switch"><span className="toolbar-label">Explore as</span>{[['diagram', 'Diagram'], ['list', 'Searchable component list']].map(([id, label]) => <button key={id} className={'chip' + (mapMode === id ? ' on' : '')} aria-pressed={mapMode === id} onClick={() => setMapMode(id)}>{label}</button>)}</div>
+      {mapMode === 'diagram' && <div className="toolbar">
         <div className="toolbar-group">
           <span className="toolbar-label">Trace a flow</span>
           <div className="chips">
             {flows.map((f) => (
-              <button key={f.id} className={'chip' + (f.id === flowId ? ' on' : '')} onClick={() => pickFlow(f.id)}>
+              <button key={f.id} className={'chip' + (f.id === flowId ? ' on' : '')} aria-pressed={f.id === flowId} onClick={() => pickFlow(f.id)}>
                 {f.name}
               </button>
             ))}
@@ -150,18 +159,19 @@ function MapView({ flowId, setFlowId, step, setStep, kinds, setKinds, sel, setSe
             <span className="toolbar-label">Show interfaces</span>
             <div className="chips">
               {KIND_IDS.map((k) => (
-                <button key={k} className={'chip kind' + (kinds.has(k) ? ' on' : '')} onClick={() => toggleKind(k)} style={{ '--k': edgeKinds[k].color }}>
+                <button key={k} className={'chip kind' + (kinds.has(k) ? ' on' : '')} aria-pressed={kinds.has(k)} onClick={() => toggleKind(k)} style={{ '--k': edgeKinds[k].color }}>
                   <i />{edgeKinds[k].name}
                 </button>
               ))}
             </div>
           </div>
         )}
-      </div>
+      </div>}
 
-      <div className="map-layout">
+      {mapMode === 'list' && <section className="component-directory" aria-label="Component directory"><div className="directory-tools"><label>Find a component<input type="search" value={componentQuery} onChange={e => setComponentQuery(e.target.value)} placeholder="Search by name or responsibility…" /></label><label>Area<select value={componentArea} onChange={e => setComponentArea(e.target.value)}><option value="all">All areas</option>{Object.entries(domains).map(([id, d]) => <option key={id} value={id}>{d.name}</option>)}</select></label></div><p role="status">{listedNodes.length} components and external parties shown.</p><div className="directory-grid">{listedNodes.map(n => <article key={n.id} style={{ '--c': domains[n.domain].color }}><span className="eyebrow">{domains[n.domain].name}</span><h3>{n.label}</h3><p>{n.summary}</p><a href={`#/node/${n.id}`}>Open detailed design & interfaces →</a></article>)}</div>{!listedNodes.length && <p>No components match. <button className="link" onClick={() => { setComponentQuery(''); setComponentArea('all') }}>Clear search and area</button></p>}</section>}
+      {mapMode === 'diagram' && <><p className="scroll-hint">Wide diagram · scroll horizontally to see every component. The inspection panel follows the diagram on smaller screens.</p><div className="map-layout">
         <div className="map-scroll" onClick={(ev) => { if (ev.target.tagName === 'svg') setSel(null) }}>
-          <svg viewBox={`0 0 ${VIEW.w} ${VIEW.h}`} className="map" role="img" aria-label="End-to-end hedge fund platform diagram">
+          <svg viewBox={`0 0 ${VIEW.w} ${VIEW.h}`} className="map" role="group" aria-label="Interactive hedge fund platform diagram; a searchable component list is also available">
             <defs>
               {KIND_IDS.map((k) => (
                 <marker key={k} id={`arr-${k}`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
@@ -212,7 +222,7 @@ function MapView({ flowId, setFlowId, step, setStep, kinds, setKinds, sel, setSe
                   onBlur={() => setHover(null)}
                   onClick={(ev) => { ev.stopPropagation(); setSel({ type: 'node', id: n.id }) }}
                   onDoubleClick={() => go(n.id)}
-                  onKeyDown={(ev) => { if (ev.key === 'Enter') go(n.id) }}
+                  onKeyDown={(ev) => { if (ev.key === 'Enter') go(n.id); if (ev.key === ' ') { ev.preventDefault(); setSel({ type: 'node', id: n.id }) } }}
                 >
                   <rect className="box" width={n.w} height={n.h} rx="3" />
                   {!n.external && <rect className="cap" width={n.w} height="3" />}
@@ -248,7 +258,7 @@ function MapView({ flowId, setFlowId, step, setStep, kinds, setKinds, sel, setSe
           </svg>
         </div>
 
-        <aside className="inspector">
+        <aside className="inspector" aria-label="Selected component or workflow">
           {flow ? (
             <FlowPanel flow={flow} step={step} setStep={setStep} playing={playing} setPlaying={setPlaying} close={() => pickFlow(flow.id)} go={go} />
           ) : sel?.type === 'node' ? (
@@ -259,7 +269,7 @@ function MapView({ flowId, setFlowId, step, setStep, kinds, setKinds, sel, setSe
             showPhoton ? <PhotonPanel /> : <Legend />
           )}
         </aside>
-      </div>
+      </div></>}
     </section>
   )
 }
@@ -300,7 +310,7 @@ function NodePanel({ n, go }) {
   return (
     <div className="panel">
       <p className="eyebrow" style={{ color: domains[n.domain].color }}>{domains[n.domain].name}</p>
-      <h3>{n.label}</h3>
+      <h3 aria-live="polite">{n.label}</h3>
       <p>{n.summary}</p>
       {n.build && <p className="build"><span className={'pill b-' + n.build[0].toLowerCase()}>{n.build[0]}</span></p>}
       {links.length > 0 && (
@@ -399,9 +409,6 @@ function NodeDetail({ id, comp, decision, go, openFlow }) {
   const design = designs[id]
 
   useEffect(() => {
-    if (comp != null) document.getElementById('component-detail')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
-  }, [comp])
-  useEffect(() => {
     if (decision != null) document.getElementById(`decision-${id}-${decision}`)?.scrollIntoView({ block: 'start', behavior: 'smooth' })
   }, [id, decision])
   const jump = (sid) => document.getElementById(sid)?.scrollIntoView({ block: 'start', behavior: 'smooth' })
@@ -456,14 +463,14 @@ function NodeDetail({ id, comp, decision, go, openFlow }) {
           {inbound.length ? inbound.map((e) => <Iface key={e.id} e={e} />) : <p className="muted small">{n.domain === 'platform' ? 'Cross-cutting: used by every component.' : 'No inbound interfaces.'}</p>}
         </div>
         <div className="ctx-core">
-          <div className="core-head"><span>{n.label}</span><small>{n.components.length ? `${n.components.length} internal components · select one` : n.external ? 'External party' : ''}</small></div>
+          <div className="core-head"><span>{n.label}</span><small>{n.components.length ? `${n.components.length} internal components · select one to open` : n.external ? 'External party' : ''}</small></div>
           {n.components.length > 0 ? (
             <div className="comp-grid">
               {n.components.map((x, i) => (
                 <button key={x.name} className={'comp' + (comp === i ? ' on' : '')} onClick={() => go(id, comp === i ? null : i)}>
                   <b>{x.name}</b>
                   <span>{x.desc}</span>
-                  {x.tech && <small>{x.tech}</small>}
+                  {x.tech && <small><Tech>{x.tech}</Tech></small>}
                 </button>
               ))}
             </div>
@@ -480,19 +487,21 @@ function NodeDetail({ id, comp, decision, go, openFlow }) {
       </section>
 
       {/* Level 3: component detail */}
+      <Modal open={!!c} onClose={() => go(id, null)} label={c ? `${n.label}: ${c.name}` : ''}>
       {c && (
         <section className="comp-detail" id="component-detail">
           <p className="eyebrow">Component · {n.label}</p>
           <h3>{c.name}</h3>
           <p>{c.desc}</p>
           <ul>{c.details.map((x) => <li key={x}>{x}</li>)}</ul>
-          {c.tech && <p className="tech"><span>Typical technology</span>{c.tech}</p>}
+          {c.tech && <p className="tech"><span>Typical technology</span><Tech>{c.tech}</Tech></p>}
           <div className="row">
             <button disabled={comp === 0} onClick={() => go(id, comp - 1)}>← Previous component</button>
             <button disabled={comp === n.components.length - 1} onClick={() => go(id, comp + 1)}>Next component →</button>
           </div>
         </section>
       )}
+      </Modal>
 
       {design && <DesignSection id={id} design={design} go={go} />}
 
@@ -558,7 +567,7 @@ function NodeDetail({ id, comp, decision, go, openFlow }) {
 
         {n.vendors && (
           <Block title="Vendor landscape">
-            <div className="examples">{n.vendors.map((v) => <span key={v} className="tag-plain">{v}</span>)}</div>
+            <div className="examples">{n.vendors.map((v) => <span key={v} className="tag-plain"><Tech>{v}</Tech></span>)}</div>
           </Block>
         )}
 
@@ -600,7 +609,7 @@ function DesignSection({ id, design, go }) {
           <table className="tbl stack-tbl">
             <tbody>
               {design.stack.map(([layer, choice, why]) => (
-                <tr key={layer}><th>{layer}</th><td><b>{choice}</b><br /><span className="muted">{why}</span></td></tr>
+                <tr key={layer}><th>{layer}</th><td><b><Tech>{choice}</Tech></b><br /><span className="muted">{why}</span></td></tr>
               ))}
             </tbody>
           </table>
@@ -610,7 +619,7 @@ function DesignSection({ id, design, go }) {
       <section className="decisions" id="sec-decisions">
         <div className="decisions-head">
           <h4>Design decisions</h4>
-          <p className="muted small">{decided} of {design.decisions.length} decided in this browser · pick an option to record your choice</p>
+          <p className="muted small">{decided} of {design.decisions.length} selected for shared review · add rationale and mark agreement below</p>
         </div>
         {design.decisions.map((x, i) => (
           <DecisionCard key={x.id} d={x} n={i + 1} anchor={`decision-${id}-${i + 1}`} chosen={choices[x.id]} choose={choose} />
@@ -621,6 +630,7 @@ function DesignSection({ id, design, go }) {
 }
 
 export function DecisionCard({ d, n, anchor, chosen, choose }) {
+  const shared = useDecisionState()
   const deviates = chosen && chosen !== d.rec
   return (
     <article className="decision" id={anchor}>
@@ -631,7 +641,7 @@ export function DecisionCard({ d, n, anchor, chosen, choose }) {
           <p className="muted">{d.context}</p>
         </div>
         <span className={'d-status ' + (chosen ? (deviates ? 'dev' : 'ok') : 'open')}>
-          {chosen ? (deviates ? 'Decided · differs from recommendation' : 'Decided') : 'Open'}
+          {shared.records[d.id]?.status === 'agreed' ? 'Agreed' : chosen ? (deviates ? 'Under review · different option' : 'Under review') : 'Open'}
         </span>
       </header>
       <div className="options" style={{ '--cols': d.options.length }}>
@@ -647,15 +657,16 @@ export function DecisionCard({ d, n, anchor, chosen, choose }) {
               <p className="o-fit"><span>Best when</span>{o.fit}</p>
               <ul className="pc pros">{o.pros.map((p) => <li key={p}>{p}</li>)}</ul>
               <ul className="pc cons">{o.cons.map((p) => <li key={p}>{p}</li>)}</ul>
-              <button className={'choose' + (isChosen ? ' on' : '')} onClick={() => choose(d.id, o.name)} aria-pressed={isChosen}>
-                {isChosen ? 'Chosen · click to clear' : 'Choose this'}
+              <button className={'choose' + (isChosen ? ' on' : '')} disabled={!shared.editable} onClick={() => choose(d.id, o.name)} aria-pressed={isChosen}>
+                {isChosen ? 'Selected · click to clear' : 'Select for review'}
               </button>
             </div>
           )
         })}
       </div>
+      <DecisionEditor decision={d} />
       <footer>
-        <p><span className="lbl">Recommendation</span><b>{d.rec}.</b> {d.why}</p>
+        <p><span className="lbl">Proposed recommendation</span><b>{d.rec}.</b> {d.why}</p>
         <p><span className="lbl">Revisit when</span>{d.revisit}</p>
       </footer>
     </article>

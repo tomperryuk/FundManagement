@@ -8,6 +8,124 @@ export const strategyGroups = {
   quant: 'Quantitative Trading',
 }
 
+// Reference workflow emphasis by strategy group. These are design prompts to
+// validate with each team, not claims about any individual team's actual process.
+export const strategyLifecycleProfiles = {
+  fimacro: {
+    aim: 'Express rates, credit, FX and macro views with controlled cross-asset risk and reliable OTC processing.',
+    focus: [
+      ['Research & signal', 'Point-in-time curves, surfaces, fixing calendars, sovereign and issuer identifiers; capture scenario assumptions and source vintages.'],
+      ['Sizing & pre-trade', 'Size in DV01, CS01, vega and scenario loss; include curve, basis, FX, counterparty, mandate and clearing capacity.'],
+      ['Execution', 'Select RFQ, voice, futures DMA or venue by liquidity; preserve quote responses, timestamps, dealer set and price context for best execution.'],
+      ['Post-trade & end state', 'Track bilateral confirmation, clearing/give-up, collateral and lifecycle events through maturity or termination; reconcile cash, positions and valuations.'],
+    ],
+    keyEvidence: 'Risk factors reconcile to positions and market data; trade economics and lifecycle events match counterparties/CCPs; margin and cash obligations are met by cut-off.',
+  },
+  event: {
+    aim: 'Manage catalyst-driven positions and hedges across an issuer’s capital structure while protecting deal information.',
+    focus: [
+      ['Research & signal', 'Represent deal terms, probability, key dates, conditions and break scenarios; preserve source and as-of time for events and corporate actions.'],
+      ['Sizing & pre-trade', 'Show deal-break loss, hedge basis, borrow, convertibility/option exposure and aggregated issuer risk; apply wall-crossing at issuer and deal level.'],
+      ['Execution', 'Coordinate linked legs and dealer liquidity; surface partial fills, hedge drift and price limits without assuming every leg fills together.'],
+      ['Post-trade & end state', 'Process elections, mergers, tender/consent outcomes, conversions and delistings; close or transform positions only after verified event evidence.'],
+    ],
+    keyEvidence: 'Every position has an owned catalyst state and date; event outcomes reconcile to booked positions/cash; restrictions and permitted readership remain auditable.',
+  },
+  equity: {
+    aim: 'Support fundamental long/short and primary-market activity with reliable borrow, ownership and allocation controls.',
+    focus: [
+      ['Research & signal', 'Link thesis, estimates, catalysts and approved alternative-data vintages to an instrument and issuer; retain entitlements and use restrictions.'],
+      ['Sizing & pre-trade', 'Combine factor, sector, liquidity and crowding views with locate availability, short-sale rules and aggregated ownership/disclosure thresholds.'],
+      ['Execution', 'Choose algo, care, DMA or syndicate workflow by liquidity and order type; compare realised shortfall with an appropriate pre-trade benchmark.'],
+      ['Post-trade & end state', 'Evidence fair block allocations, new-issue eligibility and borrow/financing; reconcile cash equities, swaps, corporate actions and PB records.'],
+    ],
+    keyEvidence: 'Orders pass current mandate, locate and ownership controls; allocations follow approved intent; positions, borrow, corporate actions and P&L reconcile.',
+  },
+  quant: {
+    aim: 'Move reproducible, point-in-time research into controlled high-volume production with strong model and market-access controls.',
+    focus: [
+      ['Research & signal', 'Version code, data, features, universe and parameters; prevent look-ahead/survivorship bias and compare live results with the approved experiment.'],
+      ['Sizing & pre-trade', 'Constrain portfolio and order generation by capacity, turnover, liquidity, factor risk and limits; test fail-closed behavior under stale inputs.'],
+      ['Execution', 'Measure routing and fill behavior at suitable resolution; monitor queue/session health, throttles, reject bursts and kill-switch reachability.'],
+      ['Post-trade & end state', 'Reconcile high-volume drop copies and fills without loss or duplication; explain P&L by model/signal and monitor drift, decay and unexpected exposure.'],
+    ],
+    keyEvidence: 'Production output is reproducible from approved code and data; event streams reconcile end-to-end; market-access controls work under load and failure.',
+  },
+}
+
+// A proposal for an outcome hierarchy. Targets must be baselined by strategy,
+// asset class, fund, market calendar and control cut-off before adoption.
+export const successMetricTiers = [
+  {
+    tier: '0', name: 'Business outcomes', purpose: 'Did the platform support the mandate safely and produce trusted firm outcomes?',
+    owner: 'CIO (investment outcome); CRO (risk appetite); CFO (NAV / financial integrity); COO (operational resilience)', cadence: 'Monthly committees; material issues immediately',
+    indicators: 'Risk-adjusted performance against approved mandate; drawdown and limit events with context; capital utilisation and capacity; NAV / investor-report corrections; material control failures and operational loss.',
+    endState: 'Capital and risk decisions are informed by traceable, reconciled outcomes; no individual technology team is judged on raw alpha or returns.',
+  },
+  {
+    tier: '1', name: 'End-to-end business lifecycle', purpose: 'Did research, trading and operations move each eligible business object to its required, controlled terminal state?',
+    owner: 'Named process owner for each chain; CIO / Head of Trading / COO / CFO by domain', cadence: 'Intraday exceptions; daily cut-off review; weekly trend review',
+    indicators: 'Completion by cut-off; end-to-end elapsed time by percentile; eligible objects reaching valid terminal state; exception count, age and materiality; replay/recovery success; control breaches and approved overrides.',
+    endState: 'Research idea → approved, rejected or archived thesis; signal → versioned production or documented rejection; order → filled, cancelled, expired or otherwise terminal; fill → allocated and represented in IBOR; trade → confirmed, settled and financed or in an owned exception; prices/events → approved marks and signed-off NAV/report.',
+  },
+  {
+    tier: '2', name: 'Data delivery & product quality', purpose: 'Did the right, entitled and explainable data arrive for the consumer’s decision and cut-off?',
+    owner: 'Business data owner for meaning/quality; CDO for governance; data-product/platform owner for delivery', cadence: 'Automated continuously; daily quality review; monthly governance',
+    indicators: 'Freshness lag against expected availability; completeness against an expected population; accuracy via source/reconciliation checks; point-in-time coverage and lineage; schema-contract failures; entitlement/right violations; consumer adoption and issue resolution time.',
+    endState: 'Consumer receives a versioned, provenance-bearing, entitled dataset with quality state and usable recovery path; an upstream quality defect is assigned to its source owner.',
+  },
+  {
+    tier: '3', name: 'Operational & control outcomes', purpose: 'Are daily controls, exceptions and business cut-offs completed with evidence and clear escalation?',
+    owner: 'COO / process owners for operations; CRO for risk controls; CCO for compliance controls; CFO for valuation / accounting controls', cadence: 'Intraday exception queue; daily cut-off sign-off; weekly control review; committee escalation for material issues',
+    indicators: 'Affirmation, settlement and reporting completion by applicable cut-off; material breaks by count, age and value; preventable fail rate; stale risk / valuation views; override and control-defect review; aged actions and repeat incidents.',
+    endState: 'Each obligation is completed or remains in an explicitly owned, materiality-ranked exception with cause, next action, due time and escalation; material control failures are reported independently of service availability.',
+  },
+  {
+    tier: '4', name: 'Technology delivery & runtime', purpose: 'Are capabilities delivered, adopted and operated within their agreed service and control envelope?',
+    owner: 'Business product sponsor accepts capability; CTO accountable for technology portfolio; named product and service owners deliver / operate it', cadence: 'Per delivery gate and release; real-time SLOs / paging; weekly product-service review; monthly portfolio and cost review',
+    indicators: 'Time from approved need to usable capability; acceptance criteria met at delivery gate; adoption and workflow completion; change failure, rollback and escaped defect rates; availability, error budget, latency percentiles, throughput, recovery time / data loss, alert burden and cost per useful unit.',
+    endState: 'A capability is accepted by its business owner, used in the intended workflow, has named support and recovery, meets approved SLOs and controls, and has measurable benefit; breaches or adoption gaps have an owned corrective action. Do not optimise for release count or story points.',
+  },
+]
+
+export const lifecycleScorecards = [
+  {
+    name: 'Research → approved signal', accountable: 'Strategy head / PM; CRO for model-risk approval where applicable', delivery: 'Research product owner, CDO/data owners, quant engineering',
+    measure: 'Reproducible approved outputs / expected outputs; point-in-time data coverage; hypothesis-to-approval time; stale or rejected signal rate, with reasons.',
+    end: 'Versioned signal or documented rejection, linked to thesis, code/model, data vintages, approvals and restrictions.',
+  },
+  {
+    name: 'Target → controlled order', accountable: 'PM; CCO for compliance policy and CRO for risk limits', delivery: 'PMS/OMS, reference-data and risk/compliance service owners',
+    measure: 'Orders with complete intent and pre-trade result; decision latency by percentile; stale-input blocks; override rate plus reason / subsequent review; bypass incidents (target zero).',
+    end: 'Order is accepted with recorded checks, safely blocked, or explicitly cancelled; every warning override is attributable and reviewable.',
+  },
+  {
+    name: 'Order → execution → allocation', accountable: 'Head of Trading; PM accountable for investment intent', delivery: 'OMS/EMS/FIX service owners, traders, allocation operations',
+    measure: 'Order-state reconciliation across OMS/EMS/broker; fill/drop-copy completeness; execution quality versus suitable benchmark; venue/broker outcomes; allocations consistent with approved intent and completed by relevant cut-off.',
+    end: 'All order leaves are filled, cancelled, expired or otherwise closed; fills are allocated under policy and exceptions have named owners.',
+  },
+  {
+    name: 'Fill → position, P&L & risk', accountable: 'CIO / PM for position use; CRO for independent risk view', delivery: 'IBOR/PMS/risk owners, trading operations, market-data owners',
+    measure: 'Eligible fills represented exactly once; time-to-IBOR/risk by percentile; completeness and reconciliation breaks; P&L explain coverage; break value, age and time to resolve.',
+    end: 'OMS, drop copy, IBOR, PMS and risk views reconcile or carry an explicitly owned, materiality-ranked break; intraday risk is not silently stale.',
+  },
+  {
+    name: 'Trade → confirmed, settled & financed', accountable: 'COO / Head of Operations; Treasurer for cash, margin and financing', delivery: 'Post-trade, settlement, collateral, custodian and PB service owners',
+    measure: 'Affirmation and settlement completion by market cut-off; preventable fail rate; unmatched break age/value; margin-call agreement and payment timeliness; SSI and counterparty data quality.',
+    end: 'Trade is settled, or remains in an owned exception state with a documented cause, next action, counterparty and cash/financing exposure.',
+  },
+  {
+    name: 'Prices & events → approved valuation / NAV / reporting', accountable: 'CFO / Valuation Committee; CCO for regulatory reporting', delivery: 'Valuation, accounting, corporate-actions, administrator and reporting owners',
+    measure: 'Price and corporate-action coverage by cut-off; independent price challenge resolution; shadow-to-admin reconciliation breaks by materiality; NAV/report sign-off and correction/reissue rate; filing timeliness.',
+    end: 'Marks and events are approved with source/evidence and override history; NAV and reports are signed off or held with a clear material exception and approver.',
+  },
+  {
+    name: 'Business need → delivered and adopted capability', accountable: 'Business product sponsor / process owner accepts outcome; CTO owns technology delivery portfolio', delivery: 'Product manager, engineering lead, data/service owners, Operations, Risk and Compliance as required',
+    measure: 'Elapsed time from approved need to usable capability; proportion of agreed acceptance criteria met at gate; adoption by intended users/workflow; time to resolve escaped defects; change failure/rollback and control findings; realised process benefit against baseline.',
+    end: 'Capability is accepted, adopted and supportable in the target workflow; controls, data rights, training, monitoring, recovery and service ownership are ready; residual gaps have named owners and dates.',
+  },
+]
+
 // ───────────────────────── Business fit ─────────────────────────
 
 export const profile = {

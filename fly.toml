@@ -7,6 +7,12 @@ primary_region = "lhr"
 [env]
   PORT = "8080"
   PUBLIC_ORIGIN = "https://fund-platform-blueprint.fly.dev"
+  DECISIONS_FILE = "/data/decisions/records.json"
+
+[[mounts]]
+  source = "blueprint_decisions"
+  destination = "/data"
+  snapshot_retention = 14
 
 [http_service]
   internal_port = 8080

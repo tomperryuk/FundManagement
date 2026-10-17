@@ -59,3 +59,19 @@ Sessions use authenticated encryption with purpose separation, eight-hour expiry
 Run `npm test` for access-control, callback, allowlist, cookie, missing-configuration and protected-asset checks. Tests mock the Google exchange and verifier; a real Google login requires the configured OAuth client and an interactive browser check.
 
 Reference: [Google OpenID Connect](https://developers.google.com/identity/openid-connect/openid-connect) and [server verification guidance](https://developers.google.com/identity/sign-in/web/backend-auth).
+
+## Shared decisions
+
+The authenticated `/api/decisions` service stores component, organisation and optional extension choices on the encrypted Fly volume `blueprint_decisions` at `/data/decisions/records.json`. Both permitted users see the same records. Each edit retains its owner, rationale, status, timestamp, editor and previous versions. Agreement requires a rationale; a selection starts as under review. Record version checks reject stale edits with HTTP 409 so a reviewer can reload before saving. Reads and writes require the same Google session as the application; writes also require the site's exact Origin and JSON content type. All API responses are private and no-store.
+
+The application uses one writer process and one mounted volume. Keep the Fly app at one machine while using this store; adding independent volumes would split records. Atomic writes, file and directory syncing protect completed updates across process restarts. Scheduled Fly volume snapshots retain recovery points for 14 days; use the register's JSON download for an additional export. A volume or host outage can still make shared decisions unavailable until recovery. Move to a managed database before adding multiple application machines.
+
+For a new Fly installation create the encrypted 1 GB volume in `lhr` before deployment:
+
+```sh
+flyctl volumes create blueprint_decisions --app fund-platform-blueprint --region lhr --size 1 --snapshot-retention 14 --yes
+```
+
+The entrypoint creates a private subdirectory on the root-owned mount and drops to the `node` user before serving requests. The API fails closed for editing when storage configuration is missing or the stored document cannot be read.
+
+Local Vite development uses clearly labelled browser-only preview records and never writes to production decisions. Existing browser-only selections from the previous release can be reviewed individually in the decision editor before saving them to the shared register. Production shared records require an explicit save; old browser selections are not automatically promoted into shared decisions.

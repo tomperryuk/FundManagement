@@ -1,108 +1,58 @@
-import { useMemo, useState } from 'react'
-import { allDecisions } from './designData.js'
+import { Fragment, useMemo, useState } from 'react'
+import { decisionCatalogue } from './decisionCatalogue.js'
 import { domains, nodeById } from './systemData.js'
 import { useChoices } from './choices.js'
+import DecisionEditor, { DecisionSyncNotice } from './DecisionEditor.jsx'
 
-const STATUS = { all: 'All', open: 'Open', decided: 'Decided', dev: 'Differs from recommendation' }
-const domainOrder = ['front', 'risk', 'data', 'ops', 'channels', 'platform']
+const STATUS = { all: 'All', open: 'Open', proposed: 'Under review', agreed: 'Agreed', dev: 'Different option' }
+const areas = { ...Object.fromEntries(Object.entries(domains).filter(([id]) => id !== 'external').map(([id, d]) => [id, d.name])), organisation: 'Organisation', extension: 'Optional extension' }
+const clean = value => String(value || '').replaceAll('|', '\\|').replaceAll('\n', ' ')
 
 export default function DecisionRegister() {
-  const [choices, choose] = useChoices()
+  const [choices, choose, shared] = useChoices()
   const [domain, setDomain] = useState('all')
+  const [scope, setScope] = useState('core')
   const [status, setStatus] = useState('all')
   const [q, setQ] = useState('')
   const [copied, setCopied] = useState('')
-
-  const rows = useMemo(() => {
-    const needle = q.trim().toLowerCase()
-    return allDecisions
-      .map((d) => ({ ...d, node: nodeById[d.nodeId], chosen: choices[d.id], n: +d.id.split('-').pop() }))
-      .filter((d) => domain === 'all' || d.node.domain === domain)
-      .filter((d) => status === 'all' || (status === 'open' ? !d.chosen : status === 'decided' ? d.chosen : d.chosen && d.chosen !== d.rec))
-      .filter((d) => !needle || [d.q, d.context, d.node.label, d.rec, ...d.options.map((o) => o.name)].join(' ').toLowerCase().includes(needle))
-      .sort((a, b) => domainOrder.indexOf(a.node.domain) - domainOrder.indexOf(b.node.domain))
-  }, [choices, domain, status, q])
-
-  const total = allDecisions.length
-  const decided = allDecisions.filter((d) => choices[d.id]).length
-  const deviations = allDecisions.filter((d) => choices[d.id] && choices[d.id] !== d.rec).length
-
-  const copyMarkdown = () => {
-    const lines = ['| Component | Decision | Recommended | Chosen | Revisit when |', '|---|---|---|---|---|']
-    rows.forEach((d) => lines.push(`| ${d.node.label} | ${d.q} | ${d.rec} | ${d.chosen || 'Open'} | ${d.revisit} |`))
-    const text = lines.join('\n')
-    const done = () => { setCopied('Copied'); setTimeout(() => setCopied(''), 1800) }
-    navigator.clipboard?.writeText(text).then(done, () => setCopied('Copy failed: clipboard unavailable'))
+  const [filtersOpen, setFiltersOpen] = useState(() => !window.matchMedia('(max-width: 760px)').matches)
+  const decisions = useMemo(() => decisionCatalogue.map(d => ({ ...d, node: nodeById[d.nodeId], area: d.scope === 'platform' ? nodeById[d.nodeId].domain : d.scope })), [])
+  const inScope = decisions.filter(d => scope === 'all' || d.scope !== 'extension')
+  const rows = inScope.filter(d => domain === 'all' || d.area === domain)
+    .filter(d => status === 'all' || (status === 'dev' ? choices[d.id] && choices[d.id] !== d.rec : (shared.records[d.id]?.status || 'open') === status))
+    .filter(d => !q.trim() || [d.q, d.context, d.node?.label, d.rec, shared.records[d.id]?.rationale, shared.records[d.id]?.owner, ...d.options.map(o => o.name)].join(' ').toLowerCase().includes(q.trim().toLowerCase()))
+  const selected = inScope.filter(d => choices[d.id]).length
+  const agreed = inScope.filter(d => shared.records[d.id]?.status === 'agreed').length
+  const copyMarkdown = async () => {
+    const lines = ['| Component | Decision | Recommended | Selected | Status | Owner | Rationale | Updated by | Updated |', '|---|---|---|---|---|---|---|---|---|']
+    rows.forEach(d => { const r = shared.records[d.id]; lines.push('| ' + [d.node?.label || areas[d.area], d.q, d.rec, r?.choice || 'Open', STATUS[r?.status || 'open'], r?.owner, r?.rationale, r?.updatedBy, r?.updatedAt].map(clean).join(' | ') + ' |') })
+    try { await navigator.clipboard.writeText(lines.join('\n')); setCopied(`Copied ${rows.length} decisions`) } catch { setCopied('Copy unavailable · use Download instead') }
   }
-
-  return (
-    <section className="register">
-      <p className="eyebrow">Architecture decision register</p>
-      <h2>Design decisions</h2>
-      <p className="lede">
-        Every significant design decision on the platform, with a recommended option and when to revisit it. Record your
-        choice on each component’s page or here. Choices are saved in this browser only, so copy the table to share it.
-      </p>
-
-      <dl className="map-stats register-stats">
-        <div><dt>Decisions</dt><dd>{total}</dd></div>
-        <div><dt>Decided</dt><dd>{decided}</dd></div>
-        <div><dt>Open</dt><dd>{total - decided}</dd></div>
-        <div><dt>Differ from recommendation</dt><dd>{deviations}</dd></div>
-      </dl>
-
-      <div className="toolbar register-tools">
-        <div className="toolbar-group">
-          <span className="toolbar-label">Area</span>
-          <div className="chips">
-            <button className={'chip' + (domain === 'all' ? ' on' : '')} onClick={() => setDomain('all')}>All</button>
-            {domainOrder.map((k) => (
-              <button key={k} className={'chip' + (domain === k ? ' on' : '')} onClick={() => setDomain(k)}>{domains[k].name}</button>
-            ))}
-          </div>
-        </div>
-        <div className="toolbar-group">
-          <span className="toolbar-label">Status</span>
-          <div className="chips">
-            {Object.entries(STATUS).map(([k, v]) => (
-              <button key={k} className={'chip' + (status === k ? ' on' : '')} onClick={() => setStatus(k)}>{v}</button>
-            ))}
-          </div>
-          <input id="register-search" className="search" type="search" placeholder="Search decisions, options, vendors…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search decisions" />
-          <button className="primary copy" onClick={copyMarkdown}>{copied || 'Copy as Markdown'}</button>
-        </div>
-      </div>
-
-      <div className="tbl-wrap">
-        <table className="tbl register-tbl">
-          <thead>
-            <tr><th>Component</th><th>Decision</th><th>Options</th><th>Recommended</th><th>Your choice</th></tr>
-          </thead>
-          <tbody>
-            {rows.map((d) => (
-              <tr key={d.id} className={d.chosen ? (d.chosen !== d.rec ? 'dev' : 'ok') : ''}>
-                <td>
-                  <span className="dom" style={{ '--c': domains[d.node.domain].color }}>{domains[d.node.domain].name}</span>
-                  <a className="comp-link" href={`#/node/${d.nodeId}`}>{d.node.label}</a>
-                </td>
-                <td>
-                  <a className="q-link" href={`#/node/${d.nodeId}/d${d.n}`}>{d.q}</a>
-                  <span className="muted small">{d.context}</span>
-                </td>
-                <td className="small">{d.options.map((o) => o.name).join(' · ')}</td>
-                <td><b>{d.rec}</b><span className="muted small">Revisit: {d.revisit}</span></td>
-                <td>
-                  <select id={`choice-${d.id}`} value={d.chosen || ''} onChange={(e) => choose(d.id, e.target.value || null)} aria-label={`Your choice for: ${d.q}`}>
-                    <option value="">Open</option>
-                    {d.options.map((o) => <option key={o.name} value={o.name}>{o.name}</option>)}
-                  </select>
-                </td>
-              </tr>
-            ))}
-            {rows.length === 0 && <tr><td colSpan="5" className="muted">No decisions match these filters.</td></tr>}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  )
+  const download = () => {
+    const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), decisions: rows.map(d => ({ id: d.id, question: d.q, recommended: d.rec, record: shared.records[d.id] || null })) }, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob), link = document.createElement('a')
+    link.href = url; link.download = 'fund-platform-decisions.json'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000)
+  }
+  return <section className="register">
+    <p className="eyebrow">Shared architecture decision register</p><h2>Review choices and record agreement</h2>
+    <p className="lede">Compare the proposed recommendations, select an option for review, then record an owner and rationale before marking it agreed. Both permitted reviewers can edit; each saved change records who changed it and when.</p>
+    <DecisionSyncNotice />
+    <dl className="map-stats register-stats"><div><dt>In scope</dt><dd>{inScope.length}</dd></div><div><dt>Open</dt><dd>{inScope.length - selected}</dd></div><div><dt>Under review</dt><dd>{selected - agreed}</dd></div><div><dt>Agreed</dt><dd>{agreed}</dd></div></dl>
+    <label className="register-search-label">Find a decision<input className="search" type="search" placeholder="Search decisions, rationale or owners…" value={q} onChange={e => setQ(e.target.value)} aria-label="Search decisions" /></label>
+    <details className="register-filter-panel" open={filtersOpen} onToggle={e => setFiltersOpen(e.currentTarget.open)}><summary>Filter by scope, area & status{(domain !== 'all' || status !== 'all' || scope !== 'core') ? ' · filters applied' : ''}</summary><div className="toolbar register-tools">
+      <div className="toolbar-group"><span className="toolbar-label">Scope</span><div className="chips">{[['core', 'Core blueprint'], ['all', 'Include optional extension']].map(([id, label]) => <button key={id} className={'chip' + (scope === id ? ' on' : '')} aria-pressed={scope === id} onClick={() => { setScope(id); setDomain('all') }}>{label}</button>)}</div></div>
+      <div className="toolbar-group"><span className="toolbar-label">Area</span><div className="chips"><button className={'chip' + (domain === 'all' ? ' on' : '')} aria-pressed={domain === 'all'} onClick={() => setDomain('all')}>All</button>{Object.entries(areas).filter(([id]) => scope === 'all' || id !== 'extension').map(([id, label]) => <button key={id} className={'chip' + (domain === id ? ' on' : '')} aria-pressed={domain === id} onClick={() => setDomain(id)}>{label}</button>)}</div></div>
+      <div className="toolbar-group"><span className="toolbar-label">Status</span><div className="chips">{Object.entries(STATUS).map(([id, label]) => <button key={id} className={'chip' + (status === id ? ' on' : '')} aria-pressed={status === id} onClick={() => setStatus(id)}>{label}</button>)}</div></div>
+    </div></details>
+    <div className="register-actions"><p role="status">Showing {rows.length} of {inScope.length} decisions.</p><button className="secondary-action" onClick={copyMarkdown}>Copy shown decisions</button><button className="secondary-action" onClick={download}>Download shown decisions & history</button><span role="status">{copied}</span></div>
+    <div className="tbl-wrap"><table className="tbl register-tbl"><thead><tr><th>Component</th><th>Decision</th><th>Proposed recommendation</th><th>Shared selection</th></tr></thead><tbody>{rows.map(d => <Fragment key={d.id}>
+      <tr className={choices[d.id] ? choices[d.id] === d.rec ? 'ok' : 'dev' : ''}>
+        <td data-label="Component"><span className="dom" style={{ '--c': domains[d.area]?.color || 'var(--accent)' }}>{areas[d.area]}</span><a className="comp-link" href={d.link}>{d.node?.label || areas[d.area]}</a></td>
+        <td data-label="Decision"><a className="q-link" href={d.link}>{d.q}</a><span className="muted small">{d.context}</span><details className="small"><summary>Compare options ({d.options.length})</summary><ul>{d.options.map(o => <li key={o.name}>{o.name}</li>)}</ul><a href={d.link}>Full options & trade-offs →</a></details></td>
+        <td data-label="Proposed recommendation"><b>{d.rec}</b><span className="muted small">Revisit: {d.revisit}</span></td>
+        <td data-label="Shared selection"><label className="sr-only" htmlFor={`choice-${d.id}`}>Selected option for {d.q}</label><select id={`choice-${d.id}`} value={choices[d.id] || ''} disabled={!shared.editable} onChange={e => choose(d.id, e.target.value || null)}><option value="">Open</option>{d.options.map(o => <option key={o.name}>{o.name}</option>)}</select><span className="small">{STATUS[shared.records[d.id]?.status || 'open']}</span></td>
+      </tr>
+      <tr className="register-review-row"><td colSpan={4}><details><summary>Review owner, rationale & history</summary><DecisionEditor decision={d} /></details></td></tr>
+    </Fragment>)}{!rows.length && <tr><td colSpan={4}>No decisions match these filters. <button className="link" onClick={() => { setDomain('all'); setStatus('all'); setQ('') }}>Clear filters</button></td></tr>}</tbody></table></div>
+  </section>
 }

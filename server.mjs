@@ -4,6 +4,7 @@ import { readFile, stat } from 'node:fs/promises'
 import { dirname, extname, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { OAuth2Client } from 'google-auth-library'
+import { decisionStore, DecisionError } from './decision-store.mjs'
 
 const ROOT = dirname(fileURLToPath(import.meta.url))
 export const ALLOWED_EMAILS = new Set(['tom1.perry@gmail.com', 'nigel.slinn@gmail.com'])
@@ -26,9 +27,9 @@ function cookieValue(req, name) {
   return req.headers.cookie?.split(';').map(x => x.trim()).find(x => x.startsWith(`${name}=`))?.slice(name.length + 1)
 }
 
-function page(title, message, enabled = true) {
+function page(title, message, enabled = true, switchAccount = false) {
   // Only fixed application strings enter this public page; no provider error or query text is rendered.
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Private access</title><style>body{margin:0;background:#f3f6fa;color:#16223a;font:16px/1.6 system-ui,sans-serif;display:grid;min-height:100vh;place-items:center}main{background:white;border:1px solid #dde3ec;border-top:4px solid #1961ac;padding:40px;max-width:410px;margin:24px}small{letter-spacing:.12em;text-transform:uppercase;color:#5c6880}h1{font-size:27px;line-height:1.25}p{color:#5c6880}a{display:inline-block;background:#1961ac;color:white;text-decoration:none;padding:12px 20px;border-radius:4px;font-weight:600}a:focus-visible{outline:3px solid #011b4b;outline-offset:4px}</style></head><body><main><small>Hedge Fund Platform Blueprint</small><h1>${title}</h1><p>${message}</p>${enabled ? '<a href="/auth/login">Sign in with Google</a>' : ''}</main></body></html>`
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Private access</title><style>body{margin:0;background:#f3f6fa;color:#16223a;font:16px/1.6 system-ui,sans-serif;display:grid;min-height:100vh;place-items:center}main{background:white;border:1px solid #dde3ec;border-top:4px solid #1961ac;padding:40px;max-width:410px;margin:24px}small{letter-spacing:.12em;text-transform:uppercase;color:#5c6880}h1{font-size:27px;line-height:1.25}p{color:#5c6880}a{display:inline-block;background:#1961ac;color:white;text-decoration:none;padding:12px 20px;border-radius:4px;font-weight:600}a:focus-visible{outline:3px solid #011b4b;outline-offset:4px}</style></head><body><main><small>Hedge Fund Platform Blueprint</small><h1>${title}</h1><p>${message}</p>${enabled ? `<a href="/auth/login">${switchAccount ? 'Choose another Google account' : 'Sign in with Google'}</a><p>Access is by invitation for Tom and Nigel. Choose the Google account approved by the site owner. Google will show an account selector.</p>` : ''}</main></body></html>`
 }
 
 export function createApp({ env = process.env, distDir = resolve(ROOT, 'dist'), verifyIdentity, exchangeCode } = {}) {
@@ -49,6 +50,7 @@ export function createApp({ env = process.env, distDir = resolve(ROOT, 'dist'), 
   const key = createHash('sha256').update(secret).digest()
   const google = new OAuth2Client(clientId)
   const callback = `${origin}/auth/callback`
+  const decisions = decisionStore(env.DECISIONS_FILE)
 
   function seal(data, purpose, ttl) {
     const iv = randomBytes(12)
@@ -129,7 +131,7 @@ export function createApp({ env = process.env, distDir = resolve(ROOT, 'dist'), 
         } catch {
           return respond(res, 401, page('Sign-in could not be verified', 'Please try again. If the problem continues, contact the site owner.'))
         }
-        if (!permittedIdentity(payload)) return respond(res, 403, page('Access denied', 'This Google account does not have access. Sign in with a permitted account.'))
+        if (!permittedIdentity(payload)) return respond(res, 403, page('Account not permitted', 'This Google account is not on the access list. Choose your approved account or ask the site owner to confirm access.', true, true))
         res.setHeader('Set-Cookie', [cookie(flowCookie, '', 0), cookie(sessionCookie, seal({ sub: payload.sub, email: payload.email.toLowerCase() }, 'session', SESSION_SECONDS), SESSION_SECONDS)])
         return redirect(res, '/')
       }
@@ -137,6 +139,27 @@ export function createApp({ env = process.env, distDir = resolve(ROOT, 'dist'), 
         if (req.headers.origin !== origin) return respond(res, 403, 'Forbidden', 'text/plain')
         res.setHeader('Set-Cookie', [cookie(sessionCookie, '', 0), cookie(flowCookie, '', 0)])
         return respond(res, 200, page('Signed out', 'Your session has ended.'))
+      }
+      if (url.pathname.startsWith('/api/')) {
+        if (!authorized) return respond(res, 401, JSON.stringify({ error: 'Sign in again to access shared decisions.' }), 'application/json')
+        if (url.pathname !== '/api/decisions') return respond(res, 404, JSON.stringify({ error: 'Not found' }), 'application/json')
+        try {
+          if (req.method === 'GET') return respond(res, 200, JSON.stringify({ ...await decisions.read(), actor: session.email }), 'application/json')
+          if (req.method !== 'PUT') return respond(res, 405, JSON.stringify({ error: 'Method not allowed' }), 'application/json')
+          if (req.headers.origin !== origin || req.headers['content-type']?.split(';')[0] !== 'application/json') return respond(res, 403, JSON.stringify({ error: 'Request not permitted' }), 'application/json')
+          const chunks = []
+          let size = 0
+          for await (const chunk of req) {
+            size += chunk.length
+            if (size > 16384) return respond(res, 413, JSON.stringify({ error: 'Decision is too large' }), 'application/json')
+            chunks.push(chunk)
+          }
+          let input
+          try { input = JSON.parse(Buffer.concat(chunks).toString('utf8')) } catch { throw new DecisionError(400, 'Invalid decision record') }
+          return respond(res, 200, JSON.stringify({ ...await decisions.update(input, session.email), actor: session.email }), 'application/json')
+        } catch (error) {
+          return respond(res, error instanceof DecisionError ? error.status : 503, JSON.stringify({ error: error instanceof DecisionError ? error.message : 'Shared decisions could not be saved. Please try again.' }), 'application/json')
+        }
       }
       if (!['GET', 'HEAD'].includes(req.method)) return respond(res, 405, 'Method not allowed', 'text/plain')
       if (!authorized) {

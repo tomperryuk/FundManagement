@@ -20,7 +20,7 @@ async function fixture(t, identity = { email: 'tom1.perry@gmail.com', sub: 'goog
   let nonce
   let exchanges = 0
   const server = createApp({
-    env, distDir,
+    env: { ...env, DECISIONS_FILE: join(distDir, '.shared', 'decisions.json') }, distDir,
     exchangeCode: async () => { exchanges++; return { id_token: 'mock-id-token' } },
     verifyIdentity: async () => ({ ...identity, nonce }),
     ...overrides,
@@ -166,4 +166,27 @@ test('logout requires same-origin POST and clears both secure cookies', async t 
   assert.equal(response.status, 200)
   assert.equal(response.headers.getSetCookie().length, 2)
   for (const cookie of response.headers.getSetCookie()) assert.match(cookie, /Max-Age=0/)
+})
+
+test('shared decisions require sign-in, enforce origin and share attributed versioned edits between both accounts', async t => {
+  const identity = { email: 'tom1.perry@gmail.com', sub: 'tom-sub', email_verified: true }
+  const app = await fixture(t, identity)
+  for (const method of ['GET', 'PUT']) assert.equal((await app.request('/api/decisions', { method })).status, 401)
+  const tom = (await app.signIn()).session
+  identity.email = 'nigel.slinn@gmail.com'; identity.sub = 'nigel-sub'
+  const nigel = (await app.signIn()).session
+  const input = { id: 'pmws-1', version: 0, choice: 'Plain browser', status: 'proposed', rationale: 'Browser first', owner: 'Platform lead', updatedBy: 'attacker@example.com' }
+  const update = (cookie, record, origin = env.PUBLIC_ORIGIN) => app.request('/api/decisions', { method: 'PUT', headers: { Cookie: cookie, Origin: origin, 'Content-Type': 'application/json' }, body: JSON.stringify(record) })
+  assert.equal((await update(tom, input, 'https://attacker.example')).status, 403)
+  assert.equal((await update(tom, { ...input, choice: 'Invalid' })).status, 400)
+  assert.equal((await update(tom, input)).status, 200)
+  const shared = await (await app.request('/api/decisions', { headers: { Cookie: nigel } })).json()
+  assert.equal(shared.actor, 'nigel.slinn@gmail.com')
+  assert.equal(shared.records['pmws-1'].updatedBy, 'tom1.perry@gmail.com')
+  assert.equal((await update(nigel, input)).status, 409)
+  const agreed = await update(nigel, { ...input, version: 1, status: 'agreed', rationale: 'Reviewed and agreed.' })
+  assert.equal(agreed.status, 200)
+  assert.equal((await agreed.json()).records['pmws-1'].history[1].updatedBy, 'nigel.slinn@gmail.com')
+  const privateFile = await app.request('/.shared/decisions.json', { headers: { Cookie: tom } })
+  assert.equal(privateFile.status, 404)
 })

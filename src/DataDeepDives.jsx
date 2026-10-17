@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import Modal from './Modal.jsx'
+import Tech from './Tech.jsx'
 import { nodeById, domains } from './systemData.js'
 import { strategyGroups } from './operatingModel.js'
 import { altData, secMaster } from './dataArchitecture.js'
@@ -20,6 +22,7 @@ const Tables = ({ rows }) => (
 
 export function AltDataSection() {
   const [cat, setCat] = useState(0)
+  const [open, setOpen] = useState(false)
   const c = altData.categories[cat]
   return (
     <section id="alternative-data" className="da-sec deep">
@@ -31,9 +34,10 @@ export function AltDataSection() {
       <div className="alt-cats">
         <ul className="ds-list">
           {altData.categories.map((x, i) => (
-            <li key={x[0]}><button className={i === cat ? 'on' : ''} onClick={() => setCat(i)}><b>{x[0]}</b><small>{x[3]}</small></button></li>
+            <li key={x[0]}><button className={i === cat ? 'on' : ''} onClick={() => { setCat(i); setOpen(true) }}><b>{x[0]}</b><small>{x[3]}</small></button></li>
           ))}
         </ul>
+        <Modal open={open} onClose={() => setOpen(false)} label={c[0]}>
         <article className="ds-detail">
           <h3>{c[0]}</h3>
           <p>{c[1]}</p>
@@ -48,6 +52,7 @@ export function AltDataSection() {
           <h4>Example vendors</h4>
           <div className="examples">{c[2].map((v) => <span key={v} className="tag-plain">{v}</span>)}</div>
         </article>
+        </Modal>
       </div>
 
       <h4 className="gap">Delivery mechanisms</h4>
@@ -149,7 +154,7 @@ export function SecMasterSection() {
       <h4 className="gap">Processing pipeline</h4>
       <ol className="pipeline">
         {secMaster.pipeline.map(([step, what, tech], i) => (
-          <li key={step}><span className="n">{i + 1}</span><div><b>{step}</b><p className="small">{what}</p><p className="small muted mono-ish">{tech}</p></div></li>
+          <li key={step}><span className="n">{i + 1}</span><div><b>{step}</b><p className="small">{what}</p><p className="small muted mono-ish"><Tech>{tech}</Tech></p></div></li>
         ))}
       </ol>
 
@@ -171,8 +176,8 @@ export function SecMasterSection() {
       </ol>
 
       <h4 className="gap">Corporate actions: what each type does</h4>
-      <div className="seg ca-seg" role="tablist">
-        {secMaster.caTypes.map((t, i) => <button key={t[0]} role="tab" aria-selected={i === ca} className={i === ca ? 'on' : ''} onClick={() => setCa(i)}>{t[0]}</button>)}
+      <div className="seg ca-seg" role="group" aria-label="Corporate action type">
+        {secMaster.caTypes.map((t, i) => <button key={t[0]} aria-pressed={i === ca} className={i === ca ? 'on' : ''} onClick={() => setCa(i)}>{t[0]}</button>)}
       </div>
       {(() => {
         const [type, kind, sm, pos, px, acct] = secMaster.caTypes[ca]
