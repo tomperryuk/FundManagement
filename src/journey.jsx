@@ -70,8 +70,8 @@ export const STAGES = [
     pages: [
       {
         id: 'data', title: 'Data platform',
-        summary: 'Four paths for four speeds of data. Snowflake is the proposed governed analytical platform, never the trading system of record. Technologies and service levels are candidates to validate against the current estate.',
-        parts: [['platform', 'Four data paths'], ['snowflake', 'Where Snowflake sits'], ['modelling', 'Modelling approach'], ['serving', 'Serving by use case'], ['vendors', 'Vendor landscape']],
+        summary: 'Four paths for four speeds of data, how history and corrections are kept point-in-time, and how team workspaces sit on shared services. Snowflake is the proposed governed analytical platform, never the trading system of record. Technologies and service levels are candidates to validate against the current estate.',
+        parts: [['platform', 'Four data paths'], ['snowflake', 'Where Snowflake sits'], ['modelling', 'Modelling approach'], ['pit', 'Point-in-time & corrections'], ['teams', 'Team workspaces'], ['serving', 'Serving by use case'], ['vendors', 'Vendor landscape']],
         render: (part) => <DataArchitecture part={part} />,
       },
       {
@@ -161,7 +161,7 @@ export function parseRoute(hash) {
 export const READING_PATHS = {
   leadership: { title: 'Leadership', detail: 'Understand the proposal, compare sourcing and resolve the decisions that gate delivery.', stops: [['overview'], ['options', 'strategies'], ['register'], ['roadmap']] },
   investment: { title: 'Investment teams', detail: 'Follow research into trading, then validate strategy needs, business-wide measures and key terminology.', stops: [['workflows', 'research'], ['workflows', 'trading'], ['fit', 'groups'], ['lifecycle', 'stages'], ['lifecycle', 'metrics'], ['glossary'], ['register']] },
-  technology: { title: 'Technology & controls', detail: 'Explore components, controls, data ownership, delivery outcomes, service responsibilities and key terminology.', stops: [['map'], ['lifecycle', 'stages'], ['data', 'platform'], ['datasets'], ['lifecycle', 'metrics'], ['glossary'], ['org', 'ownership'], ['register'], ['roadmap']] },
+  technology: { title: 'Technology & controls', detail: 'Explore components, controls, data ownership, delivery outcomes, service responsibilities and key terminology.', stops: [['map'], ['lifecycle', 'stages'], ['data', 'platform'], ['data', 'pit'], ['data', 'teams'], ['datasets'], ['lifecycle', 'metrics'], ['glossary'], ['org', 'ownership'], ['register'], ['roadmap']] },
 }
 export const pathSteps = key => READING_PATHS[key]?.stops.map(([id, part]) => ({ page: pageById[id], part: part || null, title: pageById[id].parts?.find(([k]) => k === part)?.[1] || pageById[id].title }))
 
