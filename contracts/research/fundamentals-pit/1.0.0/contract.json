@@ -1,0 +1,33 @@
+{
+  "$schema": "../../../contract.schema.json",
+  "specVersion": "blueprint.contract/1",
+  "id": "research.fundamentals-pit",
+  "version": "1.0.0",
+  "kind": "table",
+  "status": "draft",
+  "scope": "One synthetic fundamentals metric per company, period, source and delivery vintage; not a universal fundamentals schema.",
+  "owners": { "domain": "Research Data owner", "delivery": "Data Engineering product owner", "control": "CDO / Compliance licensing owner", "support": "Resolve Data Operations service record before activation" },
+  "bindings": { "model": "fundamentals_pit_v1_candidate", "publication": "Stage the batch, validate it, append immutable vintages and atomically accept its delivery in the publication ledger. Governed views include all accepted deliveries, preserving prior history.", "schemaNamespaceTemplate": "{env}.research" },
+  "schema": { "format": "dbt", "file": "model.yml", "logicalModelVersion": 1 },
+  "semantics": {
+    "grain": "Entity × metric × fiscal period end × source × vintage",
+    "key": ["entity_id", "metric_id", "fiscal_period_end", "source_id", "vintage_id"],
+    "time": { "published_at": "Source publication time with retained provenance", "received_at": "First receipt of this vintage", "available_at": "First accepted, permitted platform availability of this vintage" },
+    "corrections": "Append a new vintage and dataset_version with its actual availability. Preserve original rows and earlier publication snapshots.",
+    "researchSelection": "For each business key/source, choose the most recent accepted vintage whose available_at is at or before decision_time; preserve source selection policy and current access checks."
+  },
+  "quality": {
+    "onFailure": "Retain raw delivery; hold the new dataset_version and keep the last accepted version explicitly labelled with its freshness. Do not silently publish partial or restated data.",
+    "rules": [
+      { "id": "key", "check": "unique", "severity": "block", "params": { "fields": ["entity_id", "metric_id", "fiscal_period_end", "source_id", "vintage_id"] } },
+      { "id": "time-order", "check": "timestamp_order", "severity": "block", "params": { "orderedFields": ["published_at", "received_at", "available_at"], "missingPublicationTime": "Hold pending explicit domain policy; never invent knowledge time" } },
+      { "id": "entity", "check": "reference_exists", "severity": "hold", "params": { "field": "entity_id", "reference": "approved point-in-time entity mapping" } },
+      { "id": "population", "check": "population_reconciliation", "severity": "block", "params": { "expected": "Vendor delivery manifest plus contracted universe/calendar", "groupBy": ["delivery_id", "source_id"], "tolerance": "Approve by dataset before activation" } },
+      { "id": "asof", "check": "consumer_asof", "severity": "block", "params": { "availabilityField": "available_at", "condition": "available_at <= decision_time", "policy": "Enforced in access layer and replay-tested research joins" } }
+    ]
+  },
+  "service": { "freshnessSlo": null, "completenessSlo": null, "activationGate": "Approve expected calendar/universe, tolerances, actual owners, SLOs, entitlements, vintages and publication recovery before activation." },
+  "security": { "classification": "Licensed research data", "accessPolicyRef": "research.dataset-entitlement-policy.v1", "retentionPolicyRef": "contracted-vendor-history-and-records-schedule" },
+  "consumers": [ { "service": "Research workspace", "owner": "Research product owner", "acceptance": "Decision at 09:04 excludes the 09:06 vintage; historical replay retains the original value after a later correction." } ],
+  "examples": "vintages.json"
+}

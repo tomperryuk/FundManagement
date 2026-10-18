@@ -1,0 +1,55 @@
+{
+  "$schema": "../../../contract.schema.json",
+  "specVersion": "blueprint.contract/1",
+  "id": "trading.execution-reported",
+  "version": "1.0.0",
+  "kind": "event",
+  "status": "draft",
+  "scope": "Listed cash-equity executions captured before allocation; identifiers and values in fixtures are synthetic.",
+  "owners": {
+    "domain": "Head of Trading",
+    "delivery": "OMS integration product owner",
+    "control": "Trading Operations / Compliance",
+    "support": "Resolve the Trading Support service record before activation"
+  },
+  "bindings": {
+    "topicTemplate": "{env}.trading.execution-reported.v1",
+    "subjectTemplate": "{env}.trading.execution-reported.v1-value",
+    "subjectStrategy": "TopicNameStrategy",
+    "compatibility": "BACKWARD_TRANSITIVE",
+    "autoRegisterSchemas": false,
+    "schemaSelection": "Pinned release; resolve registry ID separately in each environment",
+    "keyEncoding": "Canonical compact JSON array of producer_id and execution_id, UTF-8"
+  },
+  "schema": { "format": "protobuf", "file": "execution_reported.proto", "message": "fund.trading.v1.ExecutionReported" },
+  "semantics": {
+    "grain": "One immutable reported revision of one logical execution",
+    "key": ["producer_id", "execution_id"],
+    "deduplicationKey": ["event_id"],
+    "time": { "executed_at": "Original execution time", "received_at": "Adapter's first receipt of this report", "emitted_at": "Canonical event emission; all timestamps are UTC" },
+    "corrections": "NEW creates revision 1. CORRECT is a complete replacement image. BUST sets the execution inactive. CORRECT/BUST require the previous event ID and next revision. Never sum correction quantities as new fills.",
+    "allocation": "Fund/book allocation is a separate contract; do not fabricate it when a raw fill arrives.",
+    "ordering": "By execution key, not globally. Native reports must be durably mapped to this revision chain by the adapter."
+  },
+  "quality": {
+    "onFailure": "Preserve raw report, hold affected canonical execution, open an owned incident and expose downstream completeness; never silently discard a fill.",
+    "rules": [
+      { "id": "identity", "check": "required", "severity": "block", "params": { "fields": ["event_id", "producer_id", "execution_id", "order_id", "instrument_id", "source_revision", "operation", "contract_version", "executed_at", "received_at", "emitted_at"] } },
+      { "id": "operation", "check": "enum", "severity": "block", "params": { "field": "operation", "allowed": ["NEW", "CORRECT", "BUST"] } },
+      { "id": "economics-presence", "check": "required", "severity": "block", "params": { "whenOperation": ["NEW", "CORRECT"], "fields": ["side", "quantity", "price", "trade_currency"] } },
+      { "id": "side", "check": "enum", "severity": "block", "params": { "whenOperation": ["NEW", "CORRECT"], "field": "side", "allowed": ["BUY", "SELL"] } },
+      { "id": "economics", "check": "decimal", "severity": "block", "params": { "whenOperation": ["NEW", "CORRECT"], "encoding": "plain_base10_string", "allowExponent": false, "allowThousandsSeparators": false, "fields": { "quantity": { "precision": 38, "scale": 8, "exclusiveMinimum": "0" }, "price": { "precision": 38, "scale": 12, "exclusiveMinimum": "0" } } } },
+      { "id": "currency", "check": "reference_exists", "severity": "hold", "params": { "whenOperation": ["NEW", "CORRECT"], "field": "trade_currency", "reference": "approved currency reference list" } },
+      { "id": "instrument", "check": "reference_exists", "severity": "hold", "params": { "field": "instrument_id", "reference": "approved instrument master", "asOf": "executed_at" } },
+      { "id": "revision", "check": "revision_chain", "severity": "hold", "params": { "revisionField": "source_revision", "previousEventField": "supersedes_event_id", "firstRevision": 1, "requireContiguous": true } },
+      { "id": "time-order", "check": "timestamp_order", "severity": "block", "params": { "orderedFields": ["executed_at", "received_at", "emitted_at"], "clockSkewTolerance": "Owner-approved tolerance required before activation" } }
+    ]
+  },
+  "service": { "freshnessSlo": null, "completenessSlo": null, "activationGate": "Assign actual service owners, measured SLOs, clock-skew policy, retention, consumer acknowledgements and recovery evidence before activation." },
+  "security": { "classification": "Confidential trading data", "accessPolicyRef": "trading.execution-reader-policy.v1", "retentionPolicyRef": "approved-trading-records-schedule" },
+  "consumers": [
+    { "service": "IBOR", "owner": "IBOR product owner", "acceptance": "Original, duplicate, correction, bust and out-of-order replay yield the same position as reconciled source state." },
+    { "service": "TCA", "owner": "Execution Analytics owner", "acceptance": "Use original execution time and correct economic image; reconcile output coverage to executions." }
+  ],
+  "examples": "events.protojson.json"
+}

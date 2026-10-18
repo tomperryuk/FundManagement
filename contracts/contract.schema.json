@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:fund-blueprint:contract-envelope:1",
+  "title": "Proposed blueprint contract manifest envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["specVersion", "id", "version", "kind", "status", "scope", "owners", "bindings", "schema", "semantics", "quality", "service", "security", "consumers", "examples"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "specVersion": { "const": "blueprint.contract/1" },
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9.-]+$" },
+    "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "kind": { "enum": ["event", "table"] },
+    "status": { "enum": ["draft", "review", "approved", "staged", "active", "deprecated", "retired"] },
+    "scope": { "type": "string", "minLength": 1 },
+    "owners": {
+      "type": "object", "additionalProperties": false,
+      "required": ["domain", "delivery", "control", "support"],
+      "properties": {
+        "domain": { "type": "string", "minLength": 1 },
+        "delivery": { "type": "string", "minLength": 1 },
+        "control": { "type": "string", "minLength": 1 },
+        "support": { "type": "string", "minLength": 1 }
+      }
+    },
+    "bindings": { "type": "object", "minProperties": 1 },
+    "schema": { "type": "object", "required": ["format", "file"], "properties": { "format": { "enum": ["protobuf", "dbt"] }, "file": { "type": "string", "minLength": 1 } } },
+    "semantics": { "type": "object", "required": ["grain", "key", "time", "corrections"] },
+    "quality": {
+      "type": "object", "required": ["rules", "onFailure"],
+      "properties": {
+        "onFailure": { "type": "string", "minLength": 1 },
+        "rules": { "type": "array", "minItems": 1, "items": { "type": "object", "additionalProperties": false, "required": ["id", "check", "severity", "params"], "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "check": { "enum": ["required", "decimal", "enum", "reference_exists", "revision_chain", "timestamp_order", "unique", "population_reconciliation", "consumer_asof"] },
+          "severity": { "enum": ["block", "hold", "warn"] },
+          "params": { "type": "object" }
+        } } }
+      }
+    },
+    "service": { "type": "object", "required": ["freshnessSlo", "completenessSlo", "activationGate"] },
+    "security": { "type": "object", "required": ["classification", "accessPolicyRef", "retentionPolicyRef"] },
+    "consumers": { "type": "array", "minItems": 1, "items": { "type": "object", "required": ["service", "owner", "acceptance"], "properties": { "service": { "type": "string" }, "owner": { "type": "string" }, "acceptance": { "type": "string" } } } },
+    "examples": { "type": "string", "minLength": 1 }
+  }
+}

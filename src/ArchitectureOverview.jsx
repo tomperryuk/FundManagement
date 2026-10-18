@@ -1,5 +1,6 @@
 import { domains } from './systemData.js'
 import FlowDiagram from './FlowDiagram.jsx'
+import { ValueChainStrip, ExecSummary } from './ValueChain.jsx'
 import { researchToProduction, liveTradingPath } from './designFlows.js'
 
 const layers = [
@@ -54,11 +55,15 @@ export default function ArchitectureOverview({ guide }) {
       </p>
 
       {guide}
+      <h3 className="sec-title">The value chain</h3>
+      <p className="muted small">Eight steps from raising capital to reallocating it. Select a step for its owner, components, decisions, measure and gap.</p>
+      <ValueChainStrip />
+      <ExecSummary />
       <p className="brief-status"><b>Working proposal for discussion.</b> Public facts are sourced below; design choices are proposals. Confirm current systems, provider scope, owners and service levels internally.</p>
       <div className="arch-evidence">
         <article><span className="evidence fact">Publicly stated</span><b>Verition context</b><p>Four named strategy groups; collaboration across investment teams; dynamic capital allocation; internal and external risk controls; Northern Trust investor portal link.</p><a href="https://www.verition.com/" target="_blank" rel="noreferrer">Verition company profile ↗</a></article>
         <article><span className="evidence inference">Design response</span><b>Architecture pattern</b><p>Shared research and data services with precise access walls; common trade / position interfaces; specialist execution and risk paths by asset class.</p><span>Proposed here; validate with stakeholders.</span></article>
-        <article><span className="evidence confirm">Confirm internally</span><b>Current estate & constraints</b><p>Existing OMS / EMS / PMS, Photon scope, administrator and PB interfaces, legal-entity perimeter, cloud / residency, latency needs, data rights and operating ownership.</p><a href="#open-questions">See open questions ↓</a></article>
+        <article><span className="evidence confirm">Confirm internally</span><b>Current estate & constraints</b><p>Existing OMS / EMS / PMS, Photon scope, administrator and PB interfaces, legal-entity perimeter, cloud / residency, latency needs, data rights and operating ownership.</p><a href="#/operating/baseline">Review actual versus proposed setup →</a></article>
       </div>
 
       <h3 className="sec-title">Architecture at a glance</h3>
@@ -71,6 +76,7 @@ export default function ArchitectureOverview({ guide }) {
       <div className="arch-foundation"><b>Shared foundation under every layer</b><span>Identity & entitlements · instrument / entity master · governed event contracts · analytical lakehouse · audit & observability · resilience & recovery</span></div>
 
       <div className="workflow-teaser"><h3>Follow the work from research to realised outcomes</h3><p>See the research and trading journeys, their hand-offs, control gates and feedback loops.</p><a className="primary-link" href="#/workflows/research">Explore research & trading workflows →</a></div>
+      <div className="operating-cards"><article><h4>How the firm operates</h4><p>Team onboarding, capital decisions, legal relationships, costs, services and recovery, with worked examples and explicit evidence gaps.</p><a href="#/operating/baseline">Explore the firm operating model →</a></article><article><h4>How the data platform is assembled</h4><p>Capabilities, owned components, technology options and delivery gates across the four data paths.</p><a href="#/data-blueprint/overview">Explore the data platform blueprint →</a></article></div>
 
       <h3 className="sec-title">Where to buy, build and integrate</h3>
       <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Approach</th><th>Use it for</th><th>Trade-off / guardrail</th></tr></thead><tbody>
@@ -84,7 +90,7 @@ export default function ArchitectureOverview({ guide }) {
         <article><b>3 · Where are the hard boundaries?</b><p>Agree investment-team confidentiality, MNPI / wall-crossing, fund and entity segregation, licensed data redistribution, regional residency, and who can override each control.</p></article>
         <article><b>4 · Which workflows need special treatment?</b><p>Measure quant order rates and latency; instrument and counterparty mix; financing and collateral; primary-market allocation; NAV timing; external reporting obligations.</p></article>
       </div>
-      <p className="arch-next">Use <b>Platform Map</b> for component ownership and interfaces, <b>Data Architecture</b> for datasets and serving paths, <b>Trade Lifecycle</b> for stage-level controls, and <b>Decision Register</b> to record the selected options.</p>
+      <p className="arch-next">Use <a href="#/operating/baseline">Firm operating model</a> for responsibilities and evidence, <a href="#/map">Platform map</a> for interfaces, <a href="#/data-blueprint/overview">Data platform blueprint</a> for capabilities and technology choices, <a href="#/lifecycle/stages">Lifecycle & success measures</a> for controls and outcomes, and <a href="#/register">Decision register</a> for selected options.</p>
     </section>
   )
 }

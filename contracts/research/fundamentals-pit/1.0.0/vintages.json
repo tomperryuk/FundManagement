@@ -1,0 +1,4 @@
+[
+  { "entity_id": "ENTITY-001", "metric_id": "REVENUE_QUARTERLY", "fiscal_period_end": "2026-09-30", "source_id": "SYNTHETIC_VENDOR", "vintage_id": "VINTAGE-001", "value": "1000000.000000000000", "unit": "USD", "published_at": "2026-10-16T09:00:00Z", "received_at": "2026-10-16T09:05:00Z", "available_at": "2026-10-16T09:06:00Z", "delivery_id": "DELIVERY-001", "dataset_version": "DATASET-001" },
+  { "entity_id": "ENTITY-001", "metric_id": "REVENUE_QUARTERLY", "fiscal_period_end": "2026-09-30", "source_id": "SYNTHETIC_VENDOR", "vintage_id": "VINTAGE-002", "value": "1050000.000000000000", "unit": "USD", "published_at": "2026-10-17T09:00:00Z", "received_at": "2026-10-17T09:05:00Z", "available_at": "2026-10-17T09:06:00Z", "delivery_id": "DELIVERY-002", "dataset_version": "DATASET-002" }
+]

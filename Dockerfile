@@ -5,6 +5,7 @@ COPY package.json package-lock.json ./
 RUN npm ci
 COPY index.html vite.config.js ./
 COPY src ./src
+COPY contracts ./contracts
 RUN npm run build
 
 FROM node:22-alpine

@@ -29,7 +29,7 @@ function cookieValue(req, name) {
 
 function page(title, message, enabled = true, switchAccount = false) {
   // Only fixed application strings enter this public page; no provider error or query text is rendered.
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Private access</title><style>body{margin:0;background:#f3f6fa;color:#16223a;font:16px/1.6 system-ui,sans-serif;display:grid;min-height:100vh;place-items:center}main{background:white;border:1px solid #dde3ec;border-top:4px solid #1961ac;padding:40px;max-width:410px;margin:24px}small{letter-spacing:.12em;text-transform:uppercase;color:#5c6880}h1{font-size:27px;line-height:1.25}p{color:#5c6880}a{display:inline-block;background:#1961ac;color:white;text-decoration:none;padding:12px 20px;border-radius:4px;font-weight:600}a:focus-visible{outline:3px solid #011b4b;outline-offset:4px}</style></head><body><main><small>Hedge Fund Platform Blueprint</small><h1>${title}</h1><p>${message}</p>${enabled ? `<a href="/auth/login">${switchAccount ? 'Choose another Google account' : 'Sign in with Google'}</a><p>Access is by invitation for Tom and Nigel. Choose the Google account approved by the site owner. Google will show an account selector.</p>` : ''}</main></body></html>`
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Private access</title><style>body{margin:0;background:#f3f6fa;color:#16223a;font:16px/1.6 system-ui,sans-serif;display:grid;min-height:100vh;place-items:center}main{background:white;border:1px solid #dde3ec;border-top:4px solid #1961ac;padding:40px;max-width:410px;margin:24px}small{letter-spacing:.12em;text-transform:uppercase;color:#5c6880}h1{font-size:27px;line-height:1.25}p{color:#5c6880}a{display:inline-block;background:#1961ac;color:white;text-decoration:none;padding:12px 20px;border-radius:4px;font-weight:600}a:focus-visible{outline:3px solid #011b4b;outline-offset:4px}</style></head><body><main><small>Hedge Fund Platform Blueprint</small><h1>${title}</h1><p>${message}</p>${enabled ? `<a href="/auth/login">${switchAccount ? 'Choose another Google account' : 'Sign in with Google'}</a><p>Choose the Google account approved by the site owner.</p>` : ''}</main></body></html>`
 }
 
 export function createApp({ env = process.env, distDir = resolve(ROOT, 'dist'), verifyIdentity, exchangeCode } = {}) {
@@ -78,8 +78,8 @@ export function createApp({ env = process.env, distDir = resolve(ROOT, 'dist'), 
     res.writeHead(status, { 'Content-Type': type })
     res.end(body)
   }
-  function redirect(res, path) {
-    res.writeHead(302, { Location: path })
+  function redirect(res, path, status = 302) {
+    res.writeHead(status, { Location: path })
     res.end()
   }
 
@@ -87,7 +87,9 @@ export function createApp({ env = process.env, distDir = resolve(ROOT, 'dist'), 
     res.setHeader('Cache-Control', 'private, no-store, max-age=0')
     res.setHeader('Vary', 'Cookie')
     res.setHeader('X-Content-Type-Options', 'nosniff')
-    res.setHeader('Referrer-Policy', 'no-referrer')
+    // Native same-origin POST forms need their real Origin for CSRF validation.
+    // Suppress referrers to other origins while allowing internal form posts.
+    res.setHeader('Referrer-Policy', 'same-origin')
     res.setHeader('X-Frame-Options', 'DENY')
     res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive')
     res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; object-src 'none'")
@@ -138,7 +140,7 @@ export function createApp({ env = process.env, distDir = resolve(ROOT, 'dist'), 
       if (url.pathname === '/auth/logout' && req.method === 'POST') {
         if (req.headers.origin !== origin) return respond(res, 403, 'Forbidden', 'text/plain')
         res.setHeader('Set-Cookie', [cookie(sessionCookie, '', 0), cookie(flowCookie, '', 0)])
-        return respond(res, 200, page('Signed out', 'Your session has ended.'))
+        return redirect(res, '/', 303)
       }
       if (url.pathname.startsWith('/api/')) {
         if (!authorized) return respond(res, 401, JSON.stringify({ error: 'Sign in again to access shared decisions.' }), 'application/json')

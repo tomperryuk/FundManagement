@@ -7,6 +7,8 @@ import { designs } from './designData.js'
 import { useChoices, useDecisionState } from './choices.js'
 import DecisionEditor from './DecisionEditor.jsx'
 import { riskPlatform } from './operatingModel.js'
+import { valueSteps, stepById, stepsForNode } from './valueChain.js'
+import { StepChip } from './ValueChain.jsx'
 
 const ROUTES = routeEdges(nodes, edges, VIEW.w, VIEW.h)
 const DEEP_DIVES = {
@@ -45,6 +47,7 @@ export default function SystemMap() {
   const [step, setStep] = useState(0)
   const [kinds, setKinds] = useState(() => new Set(KIND_IDS))
   const [sel, setSel] = useState(null) // { type: 'node' | 'edge', id }
+  const [stepId, setStepId] = useState(() => { const m = window.location.hash.match(/^#\/map\/([\w-]+)/); return m && stepById[m[1]] ? m[1] : null })
 
   const openFlow = (id) => { setFlowId(id); setStep(0); setSel(null); go(null) }
 
@@ -52,14 +55,14 @@ export default function SystemMap() {
   return (
     <MapView
       flowId={flowId} setFlowId={setFlowId} step={step} setStep={setStep}
-      kinds={kinds} setKinds={setKinds} sel={sel} setSel={setSel} go={go}
+      kinds={kinds} setKinds={setKinds} sel={sel} setSel={setSel} go={go} stepId={stepId} setStepId={setStepId}
     />
   )
 }
 
 // ─────────────────────────── Map ───────────────────────────
 
-function MapView({ flowId, setFlowId, step, setStep, kinds, setKinds, sel, setSel, go }) {
+function MapView({ flowId, setFlowId, step, setStep, kinds, setKinds, sel, setSel, go, stepId, setStepId }) {
   const [hover, setHover] = useState(null)
   const [playing, setPlaying] = useState(false)
   const [showPhoton, setShowPhoton] = useState(false)
@@ -96,8 +99,12 @@ function MapView({ flowId, setFlowId, step, setStep, kinds, setKinds, sel, setSe
       const e = edgeById[sel.id]
       return { hiEdges: new Set([e.id]), hiNodes: new Set([e.from, e.to]), current: e.id }
     }
+    if (stepId) {
+      const ids = new Set(stepById[stepId].nodes)
+      return { hiEdges: new Set(edges.filter((e) => ids.has(e.from) && ids.has(e.to)).map((e) => e.id)), hiNodes: ids, current: null }
+    }
     return { hiEdges: null, hiNodes: null, current: null }
-  }, [flow, step, focusNode, sel])
+  }, [flow, step, focusNode, sel, stepId])
 
   const visibleEdges = edges.filter((e) => {
     if (flow) return true
@@ -147,6 +154,14 @@ function MapView({ flowId, setFlowId, step, setStep, kinds, setKinds, sel, setSe
             ))}
           </div>
         </div>
+        {!flow && <div className="toolbar-group">
+          <span className="toolbar-label">Value-chain step</span>
+          <div className="chips">
+            {valueSteps.map((v) => (
+              <button key={v.id} className={'chip' + (v.id === stepId ? ' on' : '')} aria-pressed={v.id === stepId} onClick={() => { setStepId(v.id === stepId ? null : v.id); setSel(null) }}>{v.n} · {v.name}</button>
+            ))}
+          </div>
+        </div>}
         <div className="toolbar-group">
           <span className="toolbar-label">Verition context</span>
           <button className={'chip' + (showPhoton ? ' on' : '')} aria-pressed={showPhoton} onClick={() => { setShowPhoton(!showPhoton); setSel(null) }}>
@@ -439,6 +454,7 @@ function NodeDetail({ id, comp, decision, go, openFlow }) {
           <p className="eyebrow">{zone}</p>
           <h2>{n.label}</h2>
           <p className="lede">{n.summary}</p>
+          {stepsForNode(id).length > 0 && <p className="chip-row step-of"><span className="small muted">Value-chain steps:</span>{stepsForNode(id).map((v) => <StepChip key={v.id} id={v.id} />)}</p>}
         </div>
         {n.build && (
           <div className="build-card">
