@@ -83,6 +83,7 @@ export default function DataArchitecture({ part, dataset } = {}) {
       {show('platform') && (<>
 <section id="da-platform" className="da-sec">
         <h3 className="sec-title">Platform architecture</h3>
+        <p className="small">Start with the <a href="#/data-blueprint/overview">data platform blueprint</a> for the capability map, <a href="#/data-blueprint/components">components and technology options</a>, and <a href="#/data-blueprint/delivery">delivery and ownership gates</a>. The detailed paths below explain how data moves.</p>
         <p className="muted small">Snowflake’s responsibilities are marked <span className="sf-key">Snowflake</span>. Read each lane left to right.</p>
         <div className="lanes-wrap">
           <div className="lanes" style={{ '--n': stages.length }}>

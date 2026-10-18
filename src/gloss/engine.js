@@ -11,6 +11,7 @@ const EXTRA = {
   'SLA / SLO': ['SLA', 'SLO'],
   'Value at Risk (VaR)': ['Value at Risk', 'VaR'],
   'Prime broker (PB)': ['Prime broker', 'PB'],
+  'PIT table (Data Vault)': ['PIT table'],
 }
 
 // Short mixed-case or numeric names (OMS, VaR, DV01, p95) are matched exactly; everything else ignores case.

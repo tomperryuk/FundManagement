@@ -120,6 +120,16 @@ const raw = {
         ['Airflow', 'Existing skills', ['Huge ecosystem; managed offerings'], ['Task-centric; lineage is bolt-on']],
         ['Prefect', 'Python-first teams', ['Simple, dynamic flows'], ['Less suited to data-asset modelling']],
       ], 'Dagster', 'Asset lineage maps directly onto regulatory “where did this number come from” questions.', 'You already run Airflow at scale.'],
+      ['Where is Data Vault used?', 'Multi-source masters need history of what each source said; high-volume facts and events do not.', [
+        ['Data Vault for multi-source masters only', 'Security master, entities, counterparties, accounts, agreements and mappings', ['Keeps every source’s history and corrections', 'Matches the ontology’s concepts, relationships and attributes'], ['Specialist skills', 'More joins; needs marts on top']],
+        ['Data Vault for all conformed data', 'A large, experienced data team that wants one pattern everywhere', ['One consistent approach', 'Strong auditability'], ['Over-modelled for prices, events and simple facts', 'Slower delivery']],
+        ['No Data Vault: bitemporal dimensional models', 'Small team, few sources per master', ['Simpler and quicker', 'Fewer joins'], ['Harder to add sources and keep each one’s history']],
+      ], 'Data Vault for multi-source masters only', 'The security master already follows the pattern. Extend it to entities, counterparties, accounts and mappings, and keep events, prices and facts in simpler patterns.', 'The team cannot sustain the skills, or mappings stay simple enough for dimensional models.'],
+      ['Where is the ontology held and who changes it?', 'Definitions, relationships and metrics must stay consistent across the vault, marts, semantic layer and AI context.', [
+        ['Versioned files in git, owned by the data governance council', 'Teams comfortable with review and CI', ['Reviewed like code', 'Can generate models, tests and catalogue entries'], ['Needs tooling and a clear owner']],
+        ['Inside a catalogue or governance tool', 'Business-led stewardship and little engineering time', ['Friendly for stewards', 'Built-in workflow'], ['Harder to generate code from; lock-in']],
+        ['Per-team glossaries', 'Early exploration only', ['No central cost'], ['Definitions drift and conflict']],
+      ], 'Versioned files in git, owned by the data governance council', 'Keeping it in git lets models, tests, catalogue entries and agent context be generated and checked in CI. Stewards review changes through pull requests.', 'Stewards cannot work in the review process, or a catalogue tool can export reliably.'],
     ],
   },
   secmaster: {

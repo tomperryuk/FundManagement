@@ -1,0 +1,14 @@
+[
+  { "boundary": "Trading event", "case": "Missing instrument_id", "expected": "Block canonical publication; retain raw report and expose affected execution completeness." },
+  { "boundary": "Trading event", "case": "NaN, exponent notation or precision overflow in quantity/price", "expected": "Reject the canonical numeric value; do not coerce through binary floating point." },
+  { "boundary": "Trading state", "case": "Same event ID and identical immutable content repeated", "expected": "Deduplicate without another position or downstream side effect." },
+  { "boundary": "Trading state", "case": "Same event ID with a changed price", "expected": "Quarantine as an ID/content conflict; accepted state remains unchanged pending investigation." },
+  { "boundary": "Trading state", "case": "Correction references an unknown predecessor or skips a revision", "expected": "Hold that key durably, reconcile missing history and show downstream incomplete scope." },
+  { "boundary": "Trading state", "case": "NEW 100, duplicate NEW, CORRECT 80, BUST", "expected": "Projected quantity is 100, 100, 80, then 0; corrections are replacement images." },
+  { "boundary": "Research delivery", "case": "Unknown publication/availability time or missing contracted population", "expected": "Hold the candidate delivery; no fabricated knowledge time or silently partial accepted product." },
+  { "boundary": "Research access", "case": "Decision at 09:04; first accepted availability at 09:06", "expected": "Exclude that vintage from the decision-time dataset." },
+  { "boundary": "Research replay", "case": "A next-day correction revises the first day's value", "expected": "The next-day view may use the new value; replay of the earlier decision retains the original available value." },
+  { "boundary": "Access", "case": "User/service lacks dataset or issuer/deal entitlement", "expected": "Deny access on every supported query, storage and export path; a metadata tag alone is insufficient." },
+  { "boundary": "Deployment", "case": "Registry unavailable and approved schema/binding absent at cold start", "expected": "Cannot activate canonical publication; use only approved, independently safe raw-capture continuity." },
+  { "boundary": "Evolution", "case": "Rename a key, change currency/sign meaning or emit an unsupported enum", "expected": "Treat as breaking unless the full consumer and domain compatibility process proves otherwise." }
+]

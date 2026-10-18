@@ -15,17 +15,34 @@ import MarketMakingView from './MarketMakingView.jsx'
 import Glossary from './Glossary.jsx'
 import TreasuryView from './TreasuryView.jsx'
 import AIContextView from './AIContextView.jsx'
+import PerspectivesView from './PerspectivesView.jsx'
+import FirmOperatingView from './FirmOperatingView.jsx'
+import DataPlatformView from './DataPlatformView.jsx'
+import SchemaContractsView from './SchemaContractsView.jsx'
+import ValueChainView from './ValueChain.jsx'
 
 export const STAGES = [
   {
-    id: 'context', n: 1, title: 'Context', blurb: 'What the platform must do and why it is shaped this way',
+    id: 'context', n: 1, title: 'Understand the business', blurb: 'The value chain, what the platform must do and why it is shaped this way',
     pages: [
       { id: 'overview', title: 'Overview', own: true, render: () => <ArchitectureOverview guide={<JourneyGuide />} /> },
+      {
+        id: 'valuechain', title: 'Value chain',
+        summary: 'The eight steps from sourcing capital to reallocating it: owners, components, decisions, proposed measures, evidence states, the gate that proves each step, and views by role.',
+        parts: [['steps', 'Steps & owners'], ['measures', 'Measures & evidence'], ['roles', 'By role'], ['gates', 'What each gate unlocks']],
+        render: (part, arg) => <ValueChainView part={part} arg={arg} />,
+      },
       {
         id: 'fit', title: 'Verition business fit',
         summary: 'Verition’s public profile and operating principles, the workflows of its four strategy groups, Photon integration options, and the internal questions to confirm before committing.',
         parts: [['assumptions', 'Verition profile & principles'], ['groups', 'Strategy group needs'], ['risk', 'Photon fit & diligence'], ['review', 'Responses & open questions']],
         render: (part) => <BusinessFit part={part} />,
+      },
+      {
+        id: 'operating', title: 'Firm operating model',
+        summary: 'How the firm is set up and run: evidence for the current estate, team lifecycle, capital decisions, entity relationships, resilience, economics, collaboration, services and worked scenarios. Proposed responsibilities require internal acceptance.',
+        parts: [['baseline', 'Actual vs proposed'], ['teams', 'Team lifecycle'], ['capital', 'Capital & decisions'], ['entities', 'Funds & counterparties'], ['resilience', 'Failure & recovery'], ['economics', 'Economics & costs'], ['collaboration', 'Collaboration & walls'], ['services', 'Service catalogue'], ['scenarios', 'Worked scenarios']],
+        render: part => <FirmOperatingView part={part} />,
       },
       {
         id: 'principles', title: 'Design principles',
@@ -36,7 +53,7 @@ export const STAGES = [
     ],
   },
   {
-    id: 'architecture', n: 2, title: 'Architecture', blurb: 'The systems, how they connect, and how a trade moves through them',
+    id: 'architecture', n: 2, title: 'See the design', blurb: 'The systems, how they connect, and how work moves through them',
     pages: [
       { id: 'workflows', title: 'Research & trading workflows', summary: 'Follow the work, the control gates and the hand-offs between investment teams and the shared platform.', parts: [['research', 'Research journey'], ['trading', 'Trading journey']], render: part => <Workflows part={part} /> },
       { id: 'map', title: 'Platform map', own: true, wide: true, render: () => <SystemMap /> },
@@ -53,12 +70,6 @@ export const STAGES = [
         render: (part) => <TreasuryView part={part} />,
       },
       {
-        id: 'ai', title: 'Ontology, AI & SDLC',
-        summary: 'Where a shared ontology and context layer adds value across the platform, which AI uses it enables, how AI fits software delivery, and the guardrails and decisions needed.',
-        parts: [['context', 'Ontology & context layer'], ['usecases', 'AI use cases'], ['sdlc', 'AI in the SDLC'], ['guardrails', 'Guardrails & decisions'], ['path', 'Adoption path']],
-        render: (part) => <AIContextView part={part} />,
-      },
-      {
         id: 'glossary', title: 'Research & trading glossary',
         summary: 'Search clear, workflow-specific definitions for the research, portfolio, trading, post-trade, data and technology terms used throughout this blueprint.',
         render: () => <Glossary />,
@@ -66,8 +77,20 @@ export const STAGES = [
     ],
   },
   {
-    id: 'data', n: 3, title: 'Data', blurb: 'The data platform, the key datasets and how to model them',
+    id: 'data', n: 3, title: 'Data & AI enablers', blurb: 'What the early steps of the value chain depend on: data, ontology, modelling and AI',
     pages: [
+      {
+        id: 'data-blueprint', title: 'Data platform blueprint',
+        summary: 'A capability-to-component blueprint with candidate technologies, interface contracts, accountable owners, trade-offs and delivery gates across operational, live, tick and analytical workloads.',
+        parts: [['overview', 'Target blueprint'], ['components', 'Capabilities & components'], ['options', 'Implementation approaches'], ['delivery', 'Delivery & operation']],
+        render: (part, component) => <DataPlatformView part={part} component={component} />,
+      },
+      {
+        id: 'contracts', title: 'Schema contracts',
+        summary: 'An implementation design for versioned data contracts: ownership, native schemas, concrete trading/research examples, validation boundaries, safe evolution and rollout.',
+        parts: [['design', 'Architecture & choices'], ['examples', 'Contract examples'], ['enforcement', 'Validation & failures'], ['evolution', 'Versioning & migration'], ['rollout', 'Implementation plan']],
+        render: part => <SchemaContractsView part={part} />,
+      },
       {
         id: 'data', title: 'Data platform',
         summary: 'Four paths for four speeds of data, how history and corrections are kept point-in-time, and how team workspaces sit on shared services. Snowflake is the proposed governed analytical platform, never the trading system of record. Technologies and service levels are candidates to validate against the current estate.',
@@ -79,12 +102,24 @@ export const STAGES = [
         summary: `${datasets.length} datasets with provider shortlists, recommendations and selection owners, alongside storage, data models, quality checks and serving paths.`,
         render: (_, arg) => <DataArchitecture part="datasets" dataset={arg} />,
       },
+      {
+        id: 'perspectives', title: 'Data modelling perspectives',
+        summary: 'How the ontology maps to Data Vault, which datasets should use it, how other design perspectives compare, and how to generate models from the ontology.',
+        parts: [['vault', 'Ontology to Data Vault'], ['fit', 'Where each pattern fits'], ['lenses', 'Other perspectives'], ['build', 'Build & risks']],
+        render: (part) => <PerspectivesView part={part} />,
+      },
+      {
+        id: 'ai', title: 'Ontology, AI & SDLC',
+        summary: 'Where a shared ontology and context layer adds value across the platform, which AI uses it enables, how AI fits software delivery, and the guardrails and decisions needed.',
+        parts: [['context', 'Ontology & context layer'], ['usecases', 'AI use cases'], ['sdlc', 'AI in the SDLC'], ['guardrails', 'Guardrails & decisions'], ['path', 'Adoption path']],
+        render: (part) => <AIContextView part={part} />,
+      },
       { id: 'secmaster', title: 'Security master', own: true, render: () => <SecMasterSection /> },
       { id: 'altdata', title: 'Alternative data', own: true, render: () => <AltDataSection /> },
     ],
   },
   {
-    id: 'deliver', n: 4, title: 'Decide & deliver', blurb: 'Sourcing, technology, organisation, open decisions and the delivery sequence',
+    id: 'deliver', n: 4, title: 'Choose & deliver', blurb: 'Sourcing, technology, organisation, open decisions and the delivery sequence',
     pages: [
       {
         id: 'options', title: 'Sourcing options',
@@ -159,9 +194,9 @@ export function parseRoute(hash) {
 }
 
 export const READING_PATHS = {
-  leadership: { title: 'Leadership', detail: 'Understand the proposal, compare sourcing and resolve the decisions that gate delivery.', stops: [['overview'], ['options', 'strategies'], ['register'], ['roadmap']] },
-  investment: { title: 'Investment teams', detail: 'Follow research into trading, then validate strategy needs, business-wide measures and key terminology.', stops: [['workflows', 'research'], ['workflows', 'trading'], ['fit', 'groups'], ['lifecycle', 'stages'], ['lifecycle', 'metrics'], ['glossary'], ['register']] },
-  technology: { title: 'Technology & controls', detail: 'Explore components, controls, data ownership, delivery outcomes, service responsibilities and key terminology.', stops: [['map'], ['lifecycle', 'stages'], ['data', 'platform'], ['data', 'pit'], ['data', 'teams'], ['datasets'], ['lifecycle', 'metrics'], ['glossary'], ['org', 'ownership'], ['register'], ['roadmap']] },
+  leadership: { title: 'Leadership', detail: 'Understand the proposal, validate the operating setup, review capital decisions and agree delivery priorities.', stops: [['overview'], ['valuechain', 'steps'], ['valuechain', 'measures'], ['operating', 'baseline'], ['operating', 'capital'], ['options', 'strategies'], ['register'], ['valuechain', 'gates'], ['roadmap']] },
+  investment: { title: 'Investment teams', detail: 'Follow research into trading, validate team readiness and strategy needs, then review outcomes and worked scenarios.', stops: [['valuechain', 'roles'], ['workflows', 'research'], ['workflows', 'trading'], ['operating', 'teams'], ['fit', 'groups'], ['lifecycle', 'stages'], ['lifecycle', 'metrics'], ['operating', 'scenarios'], ['glossary'], ['register']] },
+  technology: { title: 'Technology & controls', detail: 'Explore platform capabilities, component choices, schema contracts, data controls, service ownership and recovery before agreeing delivery.', stops: [['valuechain', 'steps'], ['map'], ['data-blueprint', 'overview'], ['data-blueprint', 'components'], ['contracts', 'design'], ['data', 'platform'], ['data', 'pit'], ['data', 'teams'], ['datasets'], ['ai', 'context'], ['operating', 'services'], ['operating', 'resilience'], ['lifecycle', 'metrics'], ['org', 'ownership'], ['register'], ['roadmap']] },
 }
 export const pathSteps = key => READING_PATHS[key]?.stops.map(([id, part]) => ({ page: pageById[id], part: part || null, title: pageById[id].parts?.find(([k]) => k === part)?.[1] || pageById[id].title }))
 

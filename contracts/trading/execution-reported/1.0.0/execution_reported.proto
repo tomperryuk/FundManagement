@@ -1,0 +1,39 @@
+syntax = "proto3";
+package fund.trading.v1;
+
+import "google/protobuf/timestamp.proto";
+
+enum Operation {
+  OPERATION_UNSPECIFIED = 0;
+  NEW = 1;
+  CORRECT = 2;
+  BUST = 3;
+}
+
+enum Side {
+  SIDE_UNSPECIFIED = 0;
+  BUY = 1;
+  SELL = 2;
+}
+
+// Requiredness and economic constraints are enforced by contract validators.
+// optional preserves absent-versus-empty/default presence in generated code.
+message ExecutionReported {
+  optional string event_id = 1;
+  optional string producer_id = 2;
+  optional string execution_id = 3;
+  optional string order_id = 4;
+  optional string instrument_id = 5;
+  optional uint64 source_revision = 6;
+  optional Operation operation = 7;
+  optional Side side = 8;
+  optional string quantity = 9;   // Exact decimal; up to 8 fractional digits.
+  optional string price = 10;    // Exact decimal; up to 12 fractional digits.
+  optional string trade_currency = 11;
+  google.protobuf.Timestamp executed_at = 12;
+  google.protobuf.Timestamp received_at = 13;
+  google.protobuf.Timestamp emitted_at = 14;
+  optional string supersedes_event_id = 15;
+  optional string contract_version = 16;
+  // Never reuse deleted field numbers or names; reserve them in later versions.
+}

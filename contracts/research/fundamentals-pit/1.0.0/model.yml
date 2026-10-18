@@ -1,0 +1,47 @@
+version: 2
+models:
+  - name: fundamentals_pit_v1_candidate
+    description: Isolated candidate table; publication requires separate quality gates.
+    config:
+      materialized: table
+      contract:
+        enforced: true
+    columns:
+      - name: entity_id
+        data_type: varchar
+        data_tests: [not_null]
+      - name: metric_id
+        data_type: varchar
+        data_tests: [not_null]
+      - name: fiscal_period_end
+        data_type: date
+        data_tests: [not_null]
+      - name: source_id
+        data_type: varchar
+        data_tests: [not_null]
+      - name: vintage_id
+        data_type: varchar
+        data_tests: [not_null]
+      - name: value
+        data_type: number(38,12)
+        data_tests: [not_null]
+      - name: unit
+        data_type: varchar
+        data_tests: [not_null]
+      - name: published_at
+        data_type: timestamp_tz
+        data_tests: [not_null]
+      - name: received_at
+        data_type: timestamp_tz
+        data_tests: [not_null]
+      - name: available_at
+        data_type: timestamp_tz
+        data_tests: [not_null]
+      - name: delivery_id
+        data_type: varchar
+        data_tests: [not_null]
+      - name: dataset_version
+        data_type: varchar
+        data_tests: [not_null]
+# Add adapter-tested composite uniqueness, entity mapping, chronology and
+# population tests. Model shape enforcement alone does not establish these.
