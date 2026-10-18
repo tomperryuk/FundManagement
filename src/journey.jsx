@@ -14,6 +14,7 @@ import OrgView from './OrgView.jsx'
 import MarketMakingView from './MarketMakingView.jsx'
 import Glossary from './Glossary.jsx'
 import TreasuryView from './TreasuryView.jsx'
+import BacktestingView from './BacktestingView.jsx'
 import AIContextView from './AIContextView.jsx'
 import PerspectivesView from './PerspectivesView.jsx'
 import FirmOperatingView from './FirmOperatingView.jsx'
@@ -68,6 +69,12 @@ export const STAGES = [
         summary: 'How cash, funding and payments fit the platform: what treasury owns, the daily cycle, the liquidity areas it manages and the controls around it.',
         parts: [['role', 'Role & cash flows'], ['cycle', 'Daily cycle'], ['liquidity', 'Liquidity & financing'], ['controls', 'Controls & decisions']],
         render: (part) => <TreasuryView part={part} />,
+      },
+      {
+        id: 'backtesting', title: 'Backtesting',
+        summary: 'How strategies are tested against history in detail: the lifecycle from hypothesis to promotion, the biases and controls, how costs and liquidity are simulated, validation methods and metrics, the supporting platform and the evidence needed for sign-off.',
+        parts: [['role', 'Purpose & ownership'], ['lifecycle', 'Lifecycle'], ['biases', 'Biases & controls'], ['realism', 'Simulation realism'], ['methods', 'Methods & metrics'], ['platform', 'Platform components'], ['governance', 'Governance & evidence']],
+        render: (part) => <BacktestingView part={part} />,
       },
       {
         id: 'glossary', title: 'Research & trading glossary',
