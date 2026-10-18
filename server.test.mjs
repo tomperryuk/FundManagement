@@ -72,6 +72,14 @@ test('anonymous visitors cannot retrieve pages, source, assets, or session data'
   assert.equal(await health.text(), 'ok')
 })
 
+test('public sign-in pages do not disclose invited account names or addresses', async t => {
+  const app = await fixture(t)
+  const response = await app.request('/')
+  const body = await response.text()
+  assert.match(body, /Sign in with Google/)
+  assert.doesNotMatch(body, /\bTom\b|\bNigel\b|tom1\.perry|nigel\.slinn|@gmail\.com/i)
+})
+
 test('missing configuration and weak session keys fail closed', async t => {
   for (const config of [{}, { ...env, GOOGLE_CLIENT_ID: '' }, { ...env, GOOGLE_CLIENT_SECRET: '' }, { ...env, SESSION_SECRET: 'short' }, { ...env, PUBLIC_ORIGIN: 'http://public.example' }]) {
     const app = await fixture(t, undefined, { env: config })
@@ -160,12 +168,21 @@ test('forged cookies and OAuth flow cookies cannot serve as application sessions
 test('logout requires same-origin POST and clears both secure cookies', async t => {
   const app = await fixture(t)
   const { session } = await app.signIn()
-  const denied = await app.request('/auth/logout', { method: 'POST', headers: { Cookie: session, Origin: 'https://attacker.example' } })
-  assert.equal(denied.status, 403)
+  for (const origin of ['https://attacker.example', 'null', undefined]) {
+    const denied = await app.request('/auth/logout', { method: 'POST', headers: { Cookie: session, ...(origin ? { Origin: origin } : {}) } })
+    assert.equal(denied.status, 403)
+    assert.equal(denied.headers.get('set-cookie'), null)
+  }
+  const document = await app.request('/', { headers: { Cookie: session } })
+  assert.equal(document.headers.get('referrer-policy'), 'same-origin')
   const response = await app.request('/auth/logout', { method: 'POST', headers: { Cookie: session, Origin: env.PUBLIC_ORIGIN } })
-  assert.equal(response.status, 200)
+  assert.equal(response.status, 303)
+  assert.equal(response.headers.get('location'), '/')
   assert.equal(response.headers.getSetCookie().length, 2)
   for (const cookie of response.headers.getSetCookie()) assert.match(cookie, /Max-Age=0/)
+  const signedOut = await app.request(response.headers.get('location'))
+  assert.equal(signedOut.status, 401)
+  assert.match(await signedOut.text(), /Sign in with Google/)
 })
 
 test('shared decisions require sign-in, enforce origin and share attributed versioned edits between both accounts', async t => {
