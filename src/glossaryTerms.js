@@ -1,6 +1,7 @@
 // Glossary entries: [area, term, definition]. Used by the Glossary page and the hover explanations.
 export const terms = [
   // Research & data
+  ['Research & data', 'Alpha decay', 'The fading of a signal’s predictive power over time, as others find it, as capacity is used or as conditions change. Its half-life sets how fast the signal must reach a decision.'],
   ['Research & data', 'Alternative data', 'Non-traditional datasets (for example, web activity, transactions or geolocation) used alongside conventional market and company data. Use requires documented licensing, permitted purpose, privacy review and point-in-time controls.'],
   ['Research & data', 'Availability time', 'When a fact first became usable by the firm, as opposed to when it applies. Historical simulations may only use versions available by the decision cutoff.'],
   ['Research & data', 'Backtest', 'A historical simulation of a strategy using past data. A credible backtest accounts for costs, liquidity, timing, universe changes and biases; it does not establish future performance.'],
@@ -11,14 +12,17 @@ export const terms = [
   ['Research & data', 'Experiment record', 'A record linking dataset versions, availability cutoffs, code, parameters and results to a research run, so the result can be reproduced and audited.'],
   ['Research & data', 'Feature', 'A model input derived from raw data, such as a return, spread, estimate revision or activity measure. Features need definitions, timestamps, versions and quality checks.'],
   ['Research & data', 'Hypothesis', 'A testable investment explanation for why an asset may be mispriced, what could change that view, and what evidence would invalidate it.'],
+  ['Research & data', 'Information coefficient', 'The correlation between a signal and the return that followed. It measures whether the signal ranks instruments usefully, not how much money it makes.'],
   ['Research & data', 'Look-ahead bias', 'A research error where a test uses information before it would have been available in real time, making historical results appear better than an implementable strategy.'],
   ['Research & data', 'MNPI', 'Material non-public information. Information controls restrict who can access or trade affected securities, issuers or deals, according to compliance policy.'],
   ['Research & data', 'Model and artifact registry', 'A versioned store of approved models, code and parameters, with who approved them and where they are deployed.'],
+  ['Research & data', 'Overfitting', 'Fitting a model so closely to past data that it captures noise, so it looks strong in a backtest and fails live. Trying many variants and keeping the best is a common cause.'],
   ['Research & data', 'Point-in-time data', 'Data preserved as it was known at a historical decision time, rather than silently replaced by corrected or subsequently published values.'],
   ['Research & data', 'Provenance', 'Evidence of where data or an analytical result came from, how it was produced, and which versions, transformations and approvals were involved.'],
   ['Research & data', 'Research reproducibility', 'The ability to recreate an analysis or signal from its recorded code, parameters, environment, data vintages and instrument universe.'],
   ['Research & data', 'Signal', 'A versioned analytical output that expresses an investment view or desired position change. A signal is an input to investment decisions, not automatically an order.'],
   ['Research & data', 'Survivorship bias', 'A research error caused by testing only entities that still exist, omitting delisted, failed or otherwise removed names from the historical universe.'],
+  ['Research & data', 'Target position', 'The holding a portfolio process wants after combining signals with risk, costs, capacity and limits. It is the input to order creation, not the order itself.'],
   ['Research & data', 'Wall crossing', 'A controlled process where a person receives confidential deal information. The issuer or deal is restricted for affected people under compliance rules until formally cleared.'],
   // Portfolio construction & risk
   ['Portfolio & risk', 'Capital allocation', 'The approved capital or risk budget assigned to a strategy, team or fund. It should be versioned and reflected consistently in sizing, limits and reporting.'],
