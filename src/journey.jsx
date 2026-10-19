@@ -21,6 +21,7 @@ import FirmOperatingView from './FirmOperatingView.jsx'
 import DataPlatformView from './DataPlatformView.jsx'
 import SchemaContractsView from './SchemaContractsView.jsx'
 import ValueChainView from './ValueChain.jsx'
+import SignalView from './SignalView.jsx'
 
 export const STAGES = [
   {
@@ -57,6 +58,12 @@ export const STAGES = [
     id: 'architecture', n: 2, title: 'See the design', blurb: 'The systems, how they connect, and how work moves through them',
     pages: [
       { id: 'workflows', title: 'Research & trading workflows', summary: 'Follow the work, the control gates and the hand-offs between investment teams and the shared platform.', parts: [['research', 'Research journey'], ['trading', 'Trading journey']], render: part => <Workflows part={part} /> },
+      {
+        id: 'signal', title: 'What is a signal',
+        summary: 'A detailed breakdown of what a signal is and is not, the parts of a signal record, how it becomes a position, the families and horizons, the path from idea to production, how it is measured and how it fails.',
+        parts: [['anatomy', 'What a signal is'], ['types', 'Types & horizons'], ['lifecycle', 'Lifecycle'], ['platform', 'On the platform & risks']],
+        render: part => <SignalView part={part} />,
+      },
       { id: 'map', title: 'Platform map', own: true, wide: true, render: () => <SystemMap /> },
       {
         id: 'lifecycle', title: 'Lifecycle & success measures',
