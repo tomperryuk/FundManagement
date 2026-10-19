@@ -71,3 +71,42 @@ export const risks = [
   ['Ontology becomes a committee', 'Keep it small: shared concepts only, named stewards, quick review cycles.'],
   ['Naming collisions', 'Document the two meanings of PIT and keep a glossary entry for each.'],
 ]
+
+// Data Vault and data mesh side by side. They answer different questions, so this is a comparison of trade-offs and a guide to choosing, not a contest.
+export const compareIntro = 'Data Vault is a way to model and store data. Data mesh is a way to organise who owns and publishes it. They sit at different layers, so a firm can use both, neither or one. The table compares them on the points that decide the choice.'
+
+export const compare = [
+  ['What it answers', 'How do we store many sources, with full history, so keys can change and models can be rebuilt?', 'Who owns each dataset, who publishes it, and how do consumers trust it?'],
+  ['Layer', 'Physical and logical model inside the platform (hubs, links, satellites).', 'Operating model and governance across teams (domain ownership, data products, contracts).'],
+  ['Main strength', 'Auditable history; adding a source or attribute does not break existing tables; loads are parallel and repeatable; models can be generated from the ontology.', 'Owners close to the meaning of the data; explicit contracts and quality promises; less central bottleneck; clear accountability.'],
+  ['Main cost', 'Many narrow tables and joins; consumers cannot query it directly, so marts or views are needed on top; skills are specialised; slower for simple datasets.', 'Needs capable engineering in every domain; risks duplicated tooling and inconsistent standards; shared entities (instruments, counterparties) are hard to own by one domain.'],
+  ['Cost of getting it wrong', 'A vault built for everything adds layers and delay with little gain, especially for prices, ticks and events that are already append-only.', 'Ownership without platform standards becomes a set of silos; contracts without enforcement are documentation only.'],
+  ['Fit with control needs', 'Strong: load time and source are kept, so “what did we know, when, from where” is answerable. Supports bitemporal views.', 'Strong if governance is federated: entitlements, MNPI walls and retention are set centrally and applied in each product. Weak if left to each team.'],
+  ['Team and skill demand', 'A small central data engineering team with Data Vault experience, helped by generation tooling.', 'A data product owner and engineer in each domain, plus a central platform team and stewards.'],
+  ['Time to first value', 'Slower start: ontology, keys and load patterns first. Pays back as sources grow.', 'Fast for a single domain with a ready team; slows as cross-domain products multiply.'],
+  ['Works against', 'Simple, single-source, current-state data; ad hoc analysis directly on the vault.', 'Small or central teams; entities shared by every domain; firms without the engineering to staff each domain.'],
+]
+
+export const chooseVault = [
+  'Several vendors or systems describe the same entity and their identifiers change (security master, entities, counterparties, accounts).',
+  'You must show what each source said at a past time, for audit or to rebuild a model after a rule change.',
+  'New sources arrive often and existing models must not break.',
+  'The ontology is versioned and you want to generate hubs, links and satellites from it.',
+]
+
+export const chooseMesh = [
+  'Domains have real data engineering capacity and want to own their datasets end to end.',
+  'The central team is the bottleneck and consumers wait for changes in data they do not own.',
+  'Datasets have clear owners and consumers in different teams who need a contract, quality promise and support route.',
+  'Governance can be federated: central standards for entitlements, retention and quality, applied by each domain.',
+]
+
+export const compareVerdict = [
+  ['Data Vault', 'Use for multi-source masters only: security master, entities, counterparties, accounts, vendor-ID and alt-data mappings. Do not use it for prices, ticks, events or accounting records.'],
+  ['Data mesh', 'Adopt the ownership and contract ideas: named data owners, versioned data products, quality promises and federated governance. Do not decentralise the platform itself.'],
+  ['Why not full mesh', 'The firm has a small number of shared entities used by every strategy, central controls that must not vary by team (MNPI walls, point-in-time rules, entitlements), and strategy teams that are better used on research than on platform engineering.'],
+  ['Why not all-vault', 'Most data is append-only or current-state and gains little from the vault pattern. The vault adds layers that slow consumers if applied everywhere.'],
+  ['How they combine', 'Owners publish data products with contracts (mesh). Behind a master data product, the multi-source history sits in a vault (Data Vault). Consumers see the product and its contract, not the hubs and satellites.'],
+]
+
+export const compareRevisit = 'Revisit if the number of domain teams with their own data engineers grows, if a central team becomes the delivery bottleneck, or if the vault grows beyond the masters it was meant for.'

@@ -1,5 +1,5 @@
 import { nodeById, domains } from './systemData.js'
-import { intro, mapping, layers, namingNote, fit, lenses, generate, risks } from './dataPerspectives.js'
+import { intro, mapping, layers, namingNote, fit, lenses, generate, risks, compareIntro, compare, chooseVault, chooseMesh, compareVerdict, compareRevisit } from './dataPerspectives.js'
 
 function NodeChip({ id }) {
   const n = nodeById[id]
@@ -38,6 +38,30 @@ export default function PerspectivesView({ part = 'vault' }) {
           <tbody>{fit.map(([a, p, w, ids]) => <tr key={a}><th>{a}</th><td>{p}</td><td className="muted">{w}</td><td><div className="chip-row tight">{ids.map((id) => <NodeChip key={id} id={id} />)}</div></td></tr>)}</tbody>
         </table>
       </div>
+    </div>
+  )
+
+  if (part === 'compare') return (
+    <div className="mm">
+      <p className="lede">{compareIntro}</p>
+      <div className="tbl-wrap">
+        <table className="tbl">
+          <thead><tr><th>Point</th><th>Data Vault</th><th>Data mesh</th></tr></thead>
+          <tbody>{compare.map(([p, v, m]) => <tr key={p}><th>{p}</th><td>{v}</td><td>{m}</td></tr>)}</tbody>
+        </table>
+      </div>
+      <h3 className="sec-title">Why you would choose each</h3>
+      <div className="ts-grid">
+        <article className="ts-card"><div className="ts-head"><h4>Choose Data Vault when</h4></div><ul className="small">{chooseVault.map((x) => <li key={x}>{x}</li>)}</ul></article>
+        <article className="ts-card"><div className="ts-head"><h4>Choose data mesh when</h4></div><ul className="small">{chooseMesh.map((x) => <li key={x}>{x}</li>)}</ul></article>
+      </div>
+      <h3 className="sec-title">What this means for the firm</h3>
+      <div className="tbl-wrap">
+        <table className="tbl">
+          <tbody>{compareVerdict.map(([t, d]) => <tr key={t}><th>{t}</th><td>{d}</td></tr>)}</tbody>
+        </table>
+      </div>
+      <p className="small">{compareRevisit} Related: <a href="#/node/lake/d5">Where is Data Vault used?</a>, <a href="#/org/decisions">Who owns data?</a> and <a href="#/data/teams">Team workspaces</a>.</p>
     </div>
   )
 
