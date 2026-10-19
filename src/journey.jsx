@@ -105,7 +105,7 @@ export const STAGES = [
       {
         id: 'perspectives', title: 'Data modelling perspectives',
         summary: 'How the ontology maps to Data Vault, which datasets should use it, how other design perspectives compare, and how to generate models from the ontology.',
-        parts: [['vault', 'Ontology to Data Vault'], ['fit', 'Where each pattern fits'], ['lenses', 'Other perspectives'], ['build', 'Build & risks']],
+        parts: [['vault', 'Ontology to Data Vault'], ['fit', 'Where each pattern fits'], ['compare', 'Data Vault vs data mesh'], ['lenses', 'Other perspectives'], ['build', 'Build & risks']],
         render: (part) => <PerspectivesView part={part} />,
       },
       {
