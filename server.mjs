@@ -1,5 +1,5 @@
 import http from 'node:http'
-import { createCipheriv, createDecipheriv, createHash, randomBytes, timingSafeEqual } from 'node:crypto'
+import { createCipheriv, createDecipheriv, createHash, randomBytes, scrypt, timingSafeEqual } from 'node:crypto'
 import { readFile, stat } from 'node:fs/promises'
 import { dirname, extname, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -7,7 +7,11 @@ import { OAuth2Client } from 'google-auth-library'
 import { decisionStore, DecisionError } from './decision-store.mjs'
 
 const ROOT = dirname(fileURLToPath(import.meta.url))
-export const ALLOWED_EMAILS = new Set(['tom1.perry@gmail.com', 'nigel.slinn@gmail.com'])
+export const ALLOWED_EMAILS = new Set(['tom1.perry@gmail.com', 'nigel.slinn@gmail.com', 'markchesser@outlook.com'])
+// Users who may also sign in with a password. The scrypt hash comes from the PASSWORD_HASH secret (see hash-password.mjs).
+export const PASSWORD_EMAILS = new Set(['markchesser@outlook.com'])
+const MAX_FAILURES = 5
+const FAILURE_WINDOW_MS = 15 * 60 * 1000
 const SESSION_SECONDS = 8 * 60 * 60
 const FLOW_SECONDS = 10 * 60
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.woff2': 'font/woff2' }
@@ -23,13 +27,27 @@ function constantEqual(a, b) {
   return x.length === y.length && timingSafeEqual(x, y)
 }
 
+const scryptAsync = (password, salt) => new Promise((ok, fail) => scrypt(password, salt, 32, { N: 16384, r: 8, p: 1 }, (e, k) => e ? fail(e) : ok(k)))
+
+// Stored format: scrypt$<salt base64url>$<hash base64url>
+export async function verifyPassword(password, stored) {
+  const [kind, salt, hash] = String(stored || '').split('$')
+  const expected = Buffer.from(hash || '', 'base64url')
+  const actual = await scryptAsync(String(password), Buffer.from(salt || 'x', 'base64url'))
+  return kind === 'scrypt' && expected.length === actual.length && timingSafeEqual(expected, actual)
+}
+
+function passwordPage(error) {
+  return page('Sign in with a password', error || 'Enter the email and password issued by the site owner.', false).replace('</p></main>', `</p><form method="post" action="/auth/password" style="display:grid;gap:12px"><label>Email<br><input name="email" type="email" autocomplete="username" required style="width:100%;box-sizing:border-box;padding:10px"></label><label>Password<br><input name="password" type="password" autocomplete="current-password" required style="width:100%;box-sizing:border-box;padding:10px"></label><button type="submit" style="background:#1961ac;color:white;border:0;padding:12px 20px;border-radius:4px;font-weight:600;cursor:pointer">Sign in</button></form></main>`)
+}
+
 function cookieValue(req, name) {
   return req.headers.cookie?.split(';').map(x => x.trim()).find(x => x.startsWith(`${name}=`))?.slice(name.length + 1)
 }
 
 function page(title, message, enabled = true, switchAccount = false) {
   // Only fixed application strings enter this public page; no provider error or query text is rendered.
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Private access</title><style>body{margin:0;background:#f3f6fa;color:#16223a;font:16px/1.6 system-ui,sans-serif;display:grid;min-height:100vh;place-items:center}main{background:white;border:1px solid #dde3ec;border-top:4px solid #1961ac;padding:40px;max-width:410px;margin:24px}small{letter-spacing:.12em;text-transform:uppercase;color:#5c6880}h1{font-size:27px;line-height:1.25}p{color:#5c6880}a{display:inline-block;background:#1961ac;color:white;text-decoration:none;padding:12px 20px;border-radius:4px;font-weight:600}a:focus-visible{outline:3px solid #011b4b;outline-offset:4px}</style></head><body><main><small>Hedge Fund Platform Blueprint</small><h1>${title}</h1><p>${message}</p>${enabled ? `<a href="/auth/login">${switchAccount ? 'Choose another Google account' : 'Sign in with Google'}</a><p>Choose the Google account approved by the site owner.</p>` : ''}</main></body></html>`
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Private access</title><style>body{margin:0;background:#f3f6fa;color:#16223a;font:16px/1.6 system-ui,sans-serif;display:grid;min-height:100vh;place-items:center}main{background:white;border:1px solid #dde3ec;border-top:4px solid #1961ac;padding:40px;max-width:410px;margin:24px}small{letter-spacing:.12em;text-transform:uppercase;color:#5c6880}h1{font-size:27px;line-height:1.25}p{color:#5c6880}a{display:inline-block;background:#1961ac;color:white;text-decoration:none;padding:12px 20px;border-radius:4px;font-weight:600}a:focus-visible{outline:3px solid #011b4b;outline-offset:4px}</style></head><body><main><small>Hedge Fund Platform Blueprint</small><h1>${title}</h1><p>${message}</p>${enabled ? `<a href="/auth/login">${switchAccount ? 'Choose another Google account' : 'Sign in with Google'}</a><p>Choose the Google account approved by the site owner.</p><p><a href="/auth/password" style="background:none;color:#1961ac;padding:0;text-decoration:underline">Use a password instead</a></p>` : ''}</main></body></html>`
 }
 
 export function createApp({ env = process.env, distDir = resolve(ROOT, 'dist'), verifyIdentity, exchangeCode } = {}) {
@@ -51,6 +69,14 @@ export function createApp({ env = process.env, distDir = resolve(ROOT, 'dist'), 
   const google = new OAuth2Client(clientId)
   const callback = `${origin}/auth/callback`
   const decisions = decisionStore(env.DECISIONS_FILE)
+  const passwordHash = env.PASSWORD_HASH || ''
+  const failures = new Map() // client address -> timestamps of recent failed password attempts
+  const recentFailures = key => {
+    const now = Date.now()
+    const list = (failures.get(key) || []).filter(t => now - t < FAILURE_WINDOW_MS)
+    failures.set(key, list)
+    return list
+  }
 
   function seal(data, purpose, ttl) {
     const iv = randomBytes(12)
@@ -110,6 +136,35 @@ export function createApp({ env = process.env, distDir = resolve(ROOT, 'dist'), 
         const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth')
         authUrl.search = new URLSearchParams({ client_id: clientId, redirect_uri: callback, response_type: 'code', scope: 'openid email', state, nonce, prompt: 'select_account', code_challenge: createHash('sha256').update(verifier).digest('base64url'), code_challenge_method: 'S256' }).toString()
         return redirect(res, authUrl.href)
+      }
+      if (url.pathname === '/auth/password' && passwordHash) {
+        if (req.method === 'GET') return authorized ? redirect(res, '/') : respond(res, 200, passwordPage())
+        if (req.method === 'POST') {
+          if (req.headers.origin !== origin) return respond(res, 403, 'Forbidden', 'text/plain')
+          const client = req.headers['fly-client-ip'] || req.socket.remoteAddress || ''
+          if (recentFailures(client).length >= MAX_FAILURES || recentFailures('*').length >= MAX_FAILURES * 4) {
+            return respond(res, 429, passwordPage('Too many attempts. Please wait a few minutes and try again.'))
+          }
+          let size = 0
+          const chunks = []
+          for await (const chunk of req) {
+            size += chunk.length
+            if (size > 2048) return respond(res, 413, 'Request too large', 'text/plain')
+            chunks.push(chunk)
+          }
+          const form = new URLSearchParams(Buffer.concat(chunks).toString('utf8'))
+          const email = String(form.get('email') || '').trim().toLowerCase()
+          // Always run the hash so timing does not reveal whether the email is eligible.
+          const passwordOk = await verifyPassword(form.get('password') || '', passwordHash).catch(() => false)
+          if (!(PASSWORD_EMAILS.has(email) && passwordOk)) {
+            recentFailures(client).push(Date.now())
+            recentFailures('*').push(Date.now())
+            return respond(res, 401, passwordPage('That email or password was not recognised.'))
+          }
+          failures.delete(client)
+          res.setHeader('Set-Cookie', [cookie(flowCookie, '', 0), cookie(sessionCookie, seal({ sub: `password:${email}`, email }, 'session', SESSION_SECONDS), SESSION_SECONDS)])
+          return redirect(res, '/', 303)
+        }
       }
       if (url.pathname === '/auth/callback' && req.method === 'GET') {
         const flow = unseal(cookieValue(req, flowCookie), 'oauth')

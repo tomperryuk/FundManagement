@@ -48,8 +48,8 @@ async function fixture(t, identity = { email: 'tom1.perry@gmail.com', sub: 'goog
   return { request, begin, signIn, get exchanges() { return exchanges } }
 }
 
-test('only the two verified Google accounts are permitted', () => {
-  for (const email of ['tom1.perry@gmail.com', 'nigel.slinn@gmail.com']) {
+test('only the three approved verified accounts are permitted', () => {
+  for (const email of ['tom1.perry@gmail.com', 'nigel.slinn@gmail.com', 'markchesser@outlook.com']) {
     assert.equal(permittedIdentity({ email, sub: 'google-sub', email_verified: true }), true)
     assert.equal(permittedIdentity({ email, sub: 'google-sub', email_verified: false }), false)
   }
@@ -206,4 +206,22 @@ test('shared decisions require sign-in, enforce origin and share attributed vers
   assert.equal((await agreed.json()).records['pmws-1'].history[1].updatedBy, 'nigel.slinn@gmail.com')
   const privateFile = await app.request('/.shared/decisions.json', { headers: { Cookie: tom } })
   assert.equal(privateFile.status, 404)
+})
+
+test('password sign-in admits only the approved user and rate limits failures', async t => {
+  const { scryptSync, randomBytes } = await import('node:crypto')
+  const salt = randomBytes(16)
+  const hash = `scrypt$${salt.toString('base64url')}$${scryptSync('correct horse', salt, 32, { N: 16384, r: 8, p: 1 }).toString('base64url')}`
+  const f = await fixture(t, undefined, { env: { ...env, PASSWORD_HASH: hash, DECISIONS_FILE: join(tmpdir(), 'unused.json') } })
+  const post = (email, password) => f.request('/auth/password', { method: 'POST', headers: { Origin: env.PUBLIC_ORIGIN, 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ email, password }) })
+  assert.equal((await f.request('/auth/password')).status, 200)
+  assert.equal((await f.request('/auth/password', { method: 'POST', body: 'x' })).status, 403)
+  assert.equal((await post('tom1.perry@gmail.com', 'correct horse')).status, 401)
+  assert.equal((await post('markchesser@outlook.com', 'wrong')).status, 401)
+  const ok = await post('markchesser@outlook.com', 'correct horse')
+  assert.equal(ok.status, 303)
+  const session = ok.headers.getSetCookie().find(v => v.startsWith('__Host-blueprint-session='))?.split(';')[0]
+  assert.equal((await f.request('/', { headers: { Cookie: session } })).status, 200)
+  for (let i = 0; i < 5; i++) await post('markchesser@outlook.com', 'wrong')
+  assert.equal((await post('markchesser@outlook.com', 'correct horse')).status, 429)
 })
