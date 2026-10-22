@@ -4,6 +4,7 @@ import { useDecisionState } from './choices.js'
 import { DecisionSyncNotice } from './DecisionEditor.jsx'
 import { TechTooltipHost } from './Tech.jsx'
 import ThemeToggle from './ThemeToggle.jsx'
+import { graphNodeForRoute } from './graphRoutes.js'
 
 function useRoute() {
   const [route, setRoute] = useState(() => {
@@ -44,6 +45,7 @@ export default function App() {
   const stageSteps = STEPS.filter(s => s.page.stage.id === page.stage.id)
   const stageIndex = stageSteps.findIndex(s => s.page.id === page.id && s.part === (page.parts ? part : null))
   const decisionState = useDecisionState()
+  const graphId = graphNodeForRoute[window.location.hash.slice(2).split('/').slice(0, 2).join('/')] || graphNodeForRoute[page.id]
   const partTitle = page.parts?.find(([id]) => id === part)?.[1]
 
   useEffect(() => {
@@ -110,7 +112,7 @@ export default function App() {
           </nav>
 
           {readingPath && <nav className="reading-path" aria-label="Selected reading path"><div><b>{readingPath.title} path</b><span>{stepIndex >= 0 ? `Topic ${stepIndex + 1} of ${steps.length}` : 'Exploring a supporting detail'}</span></div><ol>{steps.map((s, i) => <li key={i}><a href={href(s.page.id, s.part)} aria-current={stepIndex === i ? 'page' : undefined}>{s.title}</a></li>)}</ol><a href={window.location.pathname + '#/overview'}>Exit path · browse all contents</a></nav>}
-          {page.id !== 'overview' && <div className="reference-note"><span><b>{page.stage.optional ? 'Optional business proposal' : 'Reference design proposal'}</b> · Validate current systems, owners and service levels.</span><a href="#/fit/assumptions">Public facts & sources</a></div>}
+          {page.id !== 'overview' && <div className="reference-note"><span><b>{page.stage.optional ? 'Optional business proposal' : 'Reference design proposal'}</b> · Validate current systems, owners and service levels.</span>{graphId && <a href={`#/graph/${graphId}`}>View in knowledge graph</a>}<a href="#/fit/assumptions">Public facts & sources</a></div>}
           {(decisionState.error || decisionState.saving) && <DecisionSyncNotice />}
           {!page.own && (
             <header className="page-head">

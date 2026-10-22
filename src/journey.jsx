@@ -21,6 +21,8 @@ import FirmOperatingView from './FirmOperatingView.jsx'
 import DataPlatformView from './DataPlatformView.jsx'
 import SchemaContractsView from './SchemaContractsView.jsx'
 import ValueChainView from './ValueChain.jsx'
+import { lazy, Suspense } from 'react'
+const GraphView = lazy(() => import('./GraphView.jsx'))
 import SignalView from './SignalView.jsx'
 
 export const STAGES = [
@@ -65,6 +67,7 @@ export const STAGES = [
         render: part => <SignalView part={part} />,
       },
       { id: 'map', title: 'Platform map', own: true, wide: true, render: () => <SystemMap /> },
+      { id: 'graph', title: 'Knowledge graph', wide: true, summary: 'Explore how components, decisions, datasets, technologies, teams and delivery gates connect. Every node has its own link, and each one links back to its blueprint page.', render: (_, node) => <Suspense fallback={<p role="status" className="muted">Loading knowledge graph…</p>}><GraphView node={node} /></Suspense> },
       {
         id: 'lifecycle', title: 'Lifecycle & success measures',
         summary: 'A shared view across research, trading, operations, data and technology delivery: detailed trade stages, strategy-specific workflows, accountable owners, measures and end states.',
