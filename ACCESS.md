@@ -85,3 +85,14 @@ printf 'PASSWORD_HASH=%s\n' "$(node hash-password.mjs)" | flyctl secrets import 
 ```
 
 Type the password, then press Ctrl-D. Failed attempts are limited to 5 per client per 15 minutes and 20 in total; the check works on a single machine, as the decision store does. Share the password through a private channel and rotate it if it leaks. Sessions last eight hours.
+
+## Trying the knowledge graph locally
+
+```sh
+git fetch origin claude/fund-app-backtesting-details-bjeg5e
+git checkout claude/fund-app-backtesting-details-bjeg5e
+npm ci
+npm run dev        # http://localhost:5173, no sign-in
+```
+
+Open `http://localhost:5173/#/graph` for the whole graph, or a node link such as `#/graph/comp:accounting`. Links into the graph appear on component pages, the decision register, decision cards and technology cards. The graph data is a snapshot in `src/graphData.json`.
