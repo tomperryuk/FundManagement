@@ -1,3 +1,4 @@
+import GraphLink from './GraphLink.jsx'
 import { useEffect, useMemo, useState } from 'react'
 import Modal from './Modal.jsx'
 import Tech from './Tech.jsx'
@@ -655,6 +656,7 @@ export function DecisionCard({ d, n, anchor, chosen, choose }) {
         <div>
           <h3>{d.q}</h3>
           <p className="muted">{d.context}</p>
+          <GraphLink kind="dec" name={d.q} />
         </div>
         <span className={'d-status ' + (chosen ? (deviates ? 'dev' : 'ok') : 'open')}>
           {shared.records[d.id]?.status === 'agreed' ? 'Agreed' : chosen ? (deviates ? 'Under review · different option' : 'Under review') : 'Open'}

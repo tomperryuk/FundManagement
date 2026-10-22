@@ -1277,3 +1277,5 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 .kg-nb { margin-top: 12px; font-size: .85rem; }
 .kg-nb h4 { margin: 0 0 4px; }
 @media (max-width: 900px) { .kg { grid-template-columns: 1fr; grid-template-rows: none; height: auto; } .kg-canvas { height: 60vh; } .kg-side, .kg-detail { border: 0; } }
+.graph-link { display: inline-block; margin-top: 4px; font-size: .74rem; letter-spacing: .04em; color: var(--accent); text-decoration: none; border: 1px solid var(--border-2); border-radius: 2px; padding: 1px 7px; }
+.graph-link:hover { border-color: var(--accent); }

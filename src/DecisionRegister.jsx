@@ -1,3 +1,4 @@
+import GraphLink from './GraphLink.jsx'
 import { Fragment, useMemo, useState } from 'react'
 import { decisionCatalogue } from './decisionCatalogue.js'
 import { domains, nodeById } from './systemData.js'
@@ -57,7 +58,7 @@ export default function DecisionRegister() {
     <div className="tbl-wrap"><table className="tbl register-tbl"><thead><tr><th>Component</th><th>Decision</th><th>Proposed recommendation</th><th>Shared selection</th></tr></thead><tbody>{rows.map(d => <Fragment key={d.id}>
       <tr className={choices[d.id] ? choices[d.id] === d.rec ? 'ok' : 'dev' : ''}>
         <td data-label="Component"><span className="dom" style={{ '--c': domains[d.area]?.color || 'var(--accent)' }}>{areas[d.area]}</span><a className="comp-link" href={d.link}>{d.node?.label || areas[d.area]}</a></td>
-        <td data-label="Decision"><a className="q-link" href={d.link}>{d.q}</a><span className="muted small">{d.context}</span>{d.gate !== null && <span className="small step-of">Needed by {roadmap[d.gate].phase.split(' · ')[0]}{d.steps.length > 0 && ' · '}{d.steps.map(v => <StepChip key={v.id} id={v.id} />)}</span>}<details className="small"><summary>Compare options ({d.options.length})</summary><ul>{d.options.map(o => <li key={o.name}>{o.name}</li>)}</ul><a href={d.link}>Full options & trade-offs →</a></details></td>
+        <td data-label="Decision"><a className="q-link" href={d.link}>{d.q}</a><GraphLink kind="dec" name={d.q} /><span className="muted small">{d.context}</span>{d.gate !== null && <span className="small step-of">Needed by {roadmap[d.gate].phase.split(' · ')[0]}{d.steps.length > 0 && ' · '}{d.steps.map(v => <StepChip key={v.id} id={v.id} />)}</span>}<details className="small"><summary>Compare options ({d.options.length})</summary><ul>{d.options.map(o => <li key={o.name}>{o.name}</li>)}</ul><a href={d.link}>Full options & trade-offs →</a></details></td>
         <td data-label="Proposed recommendation"><b>{d.rec}</b><span className="muted small">Revisit: {d.revisit}</span></td>
         <td data-label="Shared selection"><label className="sr-only" htmlFor={`choice-${d.id}`}>Selected option for {d.q}</label><select id={`choice-${d.id}`} value={choices[d.id] || ''} disabled={!shared.editable} onChange={e => choose(d.id, e.target.value || null)}><option value="">Open</option>{d.options.map(o => <option key={o.name}>{o.name}</option>)}</select><span className="small">{STATUS[shared.records[d.id]?.status || 'open']}</span></td>
       </tr>

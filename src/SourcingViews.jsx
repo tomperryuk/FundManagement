@@ -1,3 +1,4 @@
+import GraphLink from './GraphLink.jsx'
 import { useMemo, useState } from 'react'
 import Tech from './Tech.jsx'
 import { nodes, nodeById, domains } from './systemData.js'
@@ -192,6 +193,7 @@ export function Stack({ part } = {}) {
                 <p className="ts-role">{role}</p>
                 <p className="muted small">{why}</p>
                 <p className="alts">Alternatives: <Tech>{alts.join(' · ')}</Tech></p>
+                <GraphLink kind="tech" name={tname} />
                 <div className="chip-row">{used.map((u) => <NodeChip key={u} id={u} />)}</div>
               </article>
             ))}
