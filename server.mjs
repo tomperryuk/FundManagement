@@ -10,6 +10,9 @@ const ROOT = dirname(fileURLToPath(import.meta.url))
 export const ALLOWED_EMAILS = new Set(['tom1.perry@gmail.com', 'nigel.slinn@gmail.com', 'markchesser@outlook.com'])
 // Users who may also sign in with a password. The scrypt hash comes from the PASSWORD_HASH secret (see hash-password.mjs).
 export const PASSWORD_EMAILS = new Set(['markchesser@outlook.com'])
+// Temporary built-in hash so password sign-in works without a Fly secret; a PASSWORD_HASH secret overrides it.
+// It is a scrypt hash, not the password. Remove it and set the secret once Fly access is available.
+const DEFAULT_PASSWORD_HASH = 'scrypt$PT4aIA5pJyPj9kmijCSBTA$msOMJQHa0mcMoqy4SOTv53ULL5Xrcg5E6juSS8BcWJg'
 const MAX_FAILURES = 5
 const FAILURE_WINDOW_MS = 15 * 60 * 1000
 const SESSION_SECONDS = 8 * 60 * 60
@@ -69,7 +72,7 @@ export function createApp({ env = process.env, distDir = resolve(ROOT, 'dist'), 
   const google = new OAuth2Client(clientId)
   const callback = `${origin}/auth/callback`
   const decisions = decisionStore(env.DECISIONS_FILE)
-  const passwordHash = env.PASSWORD_HASH || ''
+  const passwordHash = env.PASSWORD_HASH || DEFAULT_PASSWORD_HASH
   const failures = new Map() // client address -> timestamps of recent failed password attempts
   const recentFailures = key => {
     const now = Date.now()

@@ -78,7 +78,7 @@ Local Vite development uses clearly labelled browser-only preview records and ne
 
 ## Password sign-in (markchesser@outlook.com)
 
-`/auth/password` accepts an email and password for `markchesser@outlook.com` only. It is disabled until the `PASSWORD_HASH` secret exists. The secret holds a scrypt hash, never the password. To set or rotate it, choose a password of at least 12 characters and run from your own terminal:
+`/auth/password` accepts an email and password for `markchesser@outlook.com` only. A temporary built-in hash (`DEFAULT_PASSWORD_HASH` in `server.mjs`) is used until the `PASSWORD_HASH` secret overrides it; remove the built-in value once the secret is set. The secret holds a scrypt hash, never the password. To set or rotate it, choose a password of at least 12 characters and run from your own terminal:
 
 ```sh
 printf 'PASSWORD_HASH=%s\n' "$(node hash-password.mjs)" | flyctl secrets import --app fund-platform-blueprint
