@@ -116,7 +116,8 @@ export default function App() {
             {partTitle && <><span>›</span><b>{partTitle}</b></>}
           </nav>
 
-          {readingPath && <nav className="reading-path" aria-label="Selected reading path"><div><b>{readingPath.title} path</b><span>{stepIndex >= 0 ? `Topic ${stepIndex + 1} of ${steps.length}` : 'Exploring a supporting detail'}</span></div><ol>{steps.map((s, i) => <li key={i}><a href={href(s.page.id, s.part)} aria-current={stepIndex === i ? 'page' : undefined}>{s.title}</a></li>)}</ol><a href={window.location.pathname + '#/overview'}>Exit path · browse all contents</a></nav>}
+          {readingPath && page.stage.tool && stepIndex < 0 && <nav className="reading-path compact" aria-label="Selected reading path"><b>{readingPath.title} path</b><a href={href(steps[resume].page.id, steps[resume].part)}>← Back to topic {resume + 1} of {steps.length}: {steps[resume].title}</a><a href={window.location.pathname + window.location.hash}>Exit path</a></nav>}
+          {readingPath && !(page.stage.tool && stepIndex < 0) && <nav className="reading-path" aria-label="Selected reading path"><div><b>{readingPath.title} path</b><span>{stepIndex >= 0 ? `Topic ${stepIndex + 1} of ${steps.length}` : 'Exploring a supporting detail'}</span></div><ol>{steps.map((s, i) => <li key={i}><a href={href(s.page.id, s.part)} aria-current={stepIndex === i ? 'page' : undefined}>{s.title}</a></li>)}</ol><a href={window.location.pathname + '#/overview'}>Exit path · browse all contents</a></nav>}
           {page.id !== 'overview' && <div className="reference-note"><span><b>{page.stage.optional ? 'Optional business proposal' : 'Reference design proposal'}</b> · Validate current systems, owners and service levels.</span>{graphId && <a href={`#/graph/${graphId}`}>See connections</a>}<a href="#/fit/assumptions">Public facts & sources</a></div>}
           {(decisionState.error || decisionState.saving) && <DecisionSyncNotice />}
           {!page.own && (

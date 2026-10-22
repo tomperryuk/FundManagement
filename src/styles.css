@@ -1060,6 +1060,9 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 .reading-path ol { display: flex; flex-wrap: wrap; gap: 8px 24px; padding-left: 20px; }
 .reading-path a[aria-current] { font-weight: 600; text-decoration-thickness: 2px; }
 .reading-path > a { font-size: .78rem; }
+.reading-path.compact { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 18px; padding: 8px 14px; margin: 6px 0 14px; }
+.reading-path.compact > a { font-size: .85rem; }
+.reading-path.compact > a:last-child { margin-left: auto; font-size: .78rem; }
 .journey-complete, .workflow-handoff, .workflow-teaser { margin-top: 26px; border: 1px solid var(--border); border-left: 3px solid var(--good); background: var(--surface); padding: 20px; }
 .journey-complete a { display: inline-block; margin: 6px 20px 0 0; }
 .workflow-page { max-width: 950px; }
