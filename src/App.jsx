@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { STAGES, STEPS, READING_PATHS, pathSteps, href, legacyRedirect, parseRoute } from './journey.jsx'
+import { STAGES, TOOLS, STEPS, READING_PATHS, pathSteps, href, legacyRedirect, parseRoute } from './journey.jsx'
 import { useDecisionState } from './choices.js'
 import { DecisionSyncNotice } from './DecisionEditor.jsx'
 import { TechTooltipHost } from './Tech.jsx'
@@ -67,7 +67,8 @@ export default function App() {
               <p>Verition alignment · reference architecture</p>
             </div>
           </a>
-          <label className="mobile-stage-picker">Jump to a stage · 4 core + optional<select aria-label="Jump to a blueprint stage" value={page.stage.id} onChange={e => { const stage = STAGES.find(s => s.id === e.target.value); window.location.hash = href(stage.pages[0].id).slice(1) }}>{STAGES.map(s => <option key={s.id} value={s.id}>{s.optional ? 'Optional' : s.n} · {s.title}</option>)}</select></label>
+          <nav className="mast-tools" aria-label={TOOLS.title}>{TOOLS.pages.map(p => <a key={p.id} className={p.id === page.id ? 'on' : ''} href={href(p.id)} aria-current={p.id === page.id ? 'page' : undefined}>{p.short}</a>)}</nav>
+          <label className="mobile-stage-picker">Jump to a stage · 4 core + optional<select aria-label="Jump to a blueprint stage" value={page.stage.tool ? '' : page.stage.id} onChange={e => { const stage = STAGES.find(s => s.id === e.target.value); window.location.hash = href(stage.pages[0].id).slice(1) }}>{page.stage.tool && <option value="" disabled>{page.title}</option>}{STAGES.map(s => <option key={s.id} value={s.id}>{s.optional ? 'Optional' : s.n} · {s.title}</option>)}</select></label>
           <ol className="stepper" aria-label="Journey stages">
             {STAGES.map((s) => (
               <li key={s.id}>
@@ -100,19 +101,23 @@ export default function App() {
                 </ul>
               </section>
             ))}
+            <section className={'tools' + (page.stage.tool ? ' cur' : '')}>
+              <h4>{TOOLS.title}</h4>
+              <ul>{TOOLS.pages.map(p => <li key={p.id}><a className={p.id === page.id ? 'on' : ''} href={href(p.id)} aria-current={p.id === page.id ? 'page' : undefined}>{p.title}</a></li>)}</ul>
+            </section>
           </nav>
         </aside>
 
         <main id="main-content" tabIndex={-1} className={'page' + (page.wide ? ' wide' : '')}>
           <nav className="crumbs" aria-label="Breadcrumb">
-            <span>{page.stage.optional ? "Optional" : `Stage ${page.stage.n} of 4`} · {page.stage.title}</span>
-            <span>›</span>
+            {!page.stage.tool && <><span>{page.stage.optional ? "Optional" : `Stage ${page.stage.n} of 4`} · {page.stage.title}</span>
+            <span>›</span></>}
             {partTitle ? <a href={href(page.id)}>{page.title}</a> : <b>{page.title}</b>}
             {partTitle && <><span>›</span><b>{partTitle}</b></>}
           </nav>
 
           {readingPath && <nav className="reading-path" aria-label="Selected reading path"><div><b>{readingPath.title} path</b><span>{stepIndex >= 0 ? `Topic ${stepIndex + 1} of ${steps.length}` : 'Exploring a supporting detail'}</span></div><ol>{steps.map((s, i) => <li key={i}><a href={href(s.page.id, s.part)} aria-current={stepIndex === i ? 'page' : undefined}>{s.title}</a></li>)}</ol><a href={window.location.pathname + '#/overview'}>Exit path · browse all contents</a></nav>}
-          {page.id !== 'overview' && <div className="reference-note"><span><b>{page.stage.optional ? 'Optional business proposal' : 'Reference design proposal'}</b> · Validate current systems, owners and service levels.</span>{graphId && <a href={`#/graph/${graphId}`}>View in knowledge graph</a>}<a href="#/fit/assumptions">Public facts & sources</a></div>}
+          {page.id !== 'overview' && <div className="reference-note"><span><b>{page.stage.optional ? 'Optional business proposal' : 'Reference design proposal'}</b> · Validate current systems, owners and service levels.</span>{graphId && <a href={`#/graph/${graphId}`}>See connections</a>}<a href="#/fit/assumptions">Public facts & sources</a></div>}
           {(decisionState.error || decisionState.saving) && <DecisionSyncNotice />}
           {!page.own && (
             <header className="page-head">
@@ -133,7 +138,7 @@ export default function App() {
           <div className="page-body" key={page.id + (part || '')}>{page.render(part, arg)}</div>
 
           {stepIndex === steps.length - 1 && <section className="journey-complete"><h3>{readingPath ? `${readingPath.title} path complete` : page.stage.optional ? 'Extension review complete' : 'Core blueprint complete'}</h3><p>Use the decision register to capture owners, rationale and outstanding questions, then agree the next delivery gate.</p><a href="#/register">Review shared decisions →</a><a href={window.location.pathname + '#/overview'}>Choose another path →</a>{!page.stage.optional && <a href="#/marketmaking/model">Explore the optional Market Making extension →</a>}</section>}
-          <nav className="pager" aria-label="Previous and next">
+          {!(page.stage.tool && stepIndex < 0) && <nav className="pager" aria-label="Previous and next">
             {prev ? (
               <a className="prev" href={href(prev.page.id, prev.part)}>
                 <span>← Previous</span>
@@ -146,8 +151,8 @@ export default function App() {
                 <b>{next.part ? `${next.page.title}: ${next.title}` : next.title}</b>
               </a>
             ) : <span />}
-          </nav>
-          <p className="progress">{page.stage.optional ? "Optional extension" : `Stage ${page.stage.n} of 4`} · {page.stage.title} · section {stageIndex + 1} of {stageSteps.length}</p>
+          </nav>}
+          {!page.stage.tool && <p className="progress">{page.stage.optional ? "Optional extension" : `Stage ${page.stage.n} of 4`} · {page.stage.title} · section {stageIndex + 1} of {stageSteps.length}</p>}
         </main>
         <TechTooltipHost />
       </div>

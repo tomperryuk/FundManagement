@@ -86,7 +86,7 @@ printf 'PASSWORD_HASH=%s\n' "$(node hash-password.mjs)" | flyctl secrets import 
 
 Type the password, then press Ctrl-D. Failed attempts are limited to 5 per client per 15 minutes and 20 in total; the check works on a single machine, as the decision store does. Share the password through a private channel and rotate it if it leaks. Sessions last eight hours.
 
-## Trying the knowledge graph locally
+## Trying Explore connections locally
 
 ```sh
 git fetch origin claude/fund-app-backtesting-details-bjeg5e
@@ -95,4 +95,4 @@ npm ci
 npm run dev        # http://localhost:5173, no sign-in
 ```
 
-Open `http://localhost:5173/#/graph` for the whole graph, or a node link such as `#/graph/comp:accounting`. Links into the graph appear on component pages, the decision register, decision cards and technology cards. The graph data is a snapshot in `src/graphData.json`.
+Open `http://localhost:5173/#/graph` for the directory (value chain, components, decisions and more), an item's profile such as `#/graph/comp:accounting`, or a route between two items such as `#/graph/comp:oms~comp:accounting`. "Open graph" draws the same view as a network. Links into the graph appear on component pages, the decision register, decision cards and technology cards. The graph data is a snapshot in `src/graphData.json`.
