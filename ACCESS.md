@@ -1,6 +1,6 @@
 # Private Google access
 
-The production Node server protects the application page and **every built asset**. Only Google-verified identities for `tom1.perry@gmail.com` and `nigel.slinn@gmail.com` are admitted. The allowlist is enforced on the server in `server.mjs`.
+The production Node server protects the application page and **every built asset**. Only Google-verified identities for `tom1.perry@gmail.com` and `nigel.slinn@gmail.com` are admitted, plus `markchesser@outlook.com`, who may sign in with Google or with a password. The allowlist is enforced on the server in `server.mjs`.
 
 Without complete OAuth and session configuration the server returns a locked page (HTTP 503), never the architecture content. `/healthz` returns only `ok` for Fly health checks. Do not deploy `dist` to a public static host or CDN; deploy the supplied Dockerfile.
 
@@ -75,3 +75,13 @@ flyctl volumes create blueprint_decisions --app fund-platform-blueprint --region
 The entrypoint creates a private subdirectory on the root-owned mount and drops to the `node` user before serving requests. The API fails closed for editing when storage configuration is missing or the stored document cannot be read.
 
 Local Vite development uses clearly labelled browser-only preview records and never writes to production decisions. Existing browser-only selections from the previous release can be reviewed individually in the decision editor before saving them to the shared register. Production shared records require an explicit save; old browser selections are not automatically promoted into shared decisions.
+
+## Password sign-in (markchesser@outlook.com)
+
+`/auth/password` accepts an email and password for `markchesser@outlook.com` only. It is disabled until the `PASSWORD_HASH` secret exists. The secret holds a scrypt hash, never the password. To set or rotate it, choose a password of at least 12 characters and run from your own terminal:
+
+```sh
+printf 'PASSWORD_HASH=%s\n' "$(node hash-password.mjs)" | flyctl secrets import --app fund-platform-blueprint
+```
+
+Type the password, then press Ctrl-D. Failed attempts are limited to 5 per client per 15 minutes and 20 in total; the check works on a single machine, as the decision store does. Share the password through a private channel and rotate it if it leaks. Sessions last eight hours.
