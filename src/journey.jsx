@@ -67,7 +67,6 @@ export const STAGES = [
         render: part => <SignalView part={part} />,
       },
       { id: 'map', title: 'Platform map', own: true, wide: true, render: () => <SystemMap /> },
-      { id: 'graph', title: 'Knowledge graph', wide: true, summary: 'Explore how components, decisions, datasets, technologies, teams and delivery gates connect. Every node has its own link, and each one links back to its blueprint page.', render: (_, node) => <Suspense fallback={<p role="status" className="muted">Loading knowledge graph…</p>}><GraphView node={node} /></Suspense> },
       {
         id: 'lifecycle', title: 'Lifecycle & success measures',
         summary: 'A shared view across research, trading, operations, data and technology delivery: detailed trade stages, strategy-specific workflows, accountable owners, measures and end states.',
@@ -85,11 +84,6 @@ export const STAGES = [
         summary: 'How strategies are tested against history in detail: the lifecycle from hypothesis to promotion, the biases and controls, how costs and liquidity are simulated, validation methods and metrics, the supporting platform and the evidence needed for sign-off.',
         parts: [['role', 'Purpose & ownership'], ['lifecycle', 'Lifecycle'], ['biases', 'Biases & controls'], ['realism', 'Simulation realism'], ['methods', 'Methods & metrics'], ['platform', 'Platform components'], ['governance', 'Governance & evidence']],
         render: (part) => <BacktestingView part={part} />,
-      },
-      {
-        id: 'glossary', title: 'Research & trading glossary',
-        summary: 'Search clear, workflow-specific definitions for the research, portfolio, trading, post-trade, data and technology terms used throughout this blueprint.',
-        render: () => <Glossary />,
       },
     ],
   },
@@ -175,11 +169,17 @@ export const STAGES = [
 
 export const CORE_STAGES = STAGES.filter(s => !s.optional)
 
-export const PAGES = STAGES.flatMap((s) => s.pages.map((p) => ({ ...p, stage: s })))
+// Site-wide tools that cut across every stage. Reachable from the masthead and Contents, outside the reading order.
+export const TOOLS = { id: 'tools', tool: true, title: 'Tools', pages: [
+  { id: 'glossary', title: 'Research & trading glossary', short: 'Glossary', summary: 'Search clear, workflow-specific definitions for the research, portfolio, trading, post-trade, data and technology terms used throughout this blueprint.', render: () => <Glossary /> },
+  { id: 'graph', title: 'Explore connections', short: '◎ Explore connections', wide: true, summary: 'Pick any step, system, decision, dataset or team to see what it is connected to, and how two things relate.', render: (_, node) => <Suspense fallback={<p role="status" className="muted">Loading connections…</p>}><GraphView node={node} /></Suspense> },
+] }
+
+export const PAGES = [...STAGES, TOOLS].flatMap((s) => s.pages.map((p) => ({ ...p, stage: s })))
 const pageById = Object.fromEntries(PAGES.map((p) => [p.id, p]))
 
 // Linear reading order: every part of every page.
-export const STEPS = PAGES.flatMap((p) => (p.parts ? p.parts.map(([id, title]) => ({ page: p, part: id, title })) : [{ page: p, part: null, title: p.title }]))
+export const STEPS = PAGES.filter(p => !p.stage.tool).flatMap((p) => (p.parts ? p.parts.map(([id, title]) => ({ page: p, part: id, title })) : [{ page: p, part: null, title: p.title }]))
 
 export const href = (page, part) => `#/${page}${part ? '/' + part : ''}`
 
@@ -225,6 +225,7 @@ function JourneyGuide() {
     <p>Choose a guided path, or use Contents to browse the four core stages.</p>
     <div className="start-paths">{Object.entries(READING_PATHS).map(([key, path]) => <article key={key}><h4>{path.title}</h4><p>{path.detail}</p><span>{path.stops.length} topics</span><a className="primary-link" href={`?journey=${key}${href(...path.stops[0])}`}>Start this path →</a></article>)}</div>
     <details className="core-outline"><summary>Browse the complete blueprint · {CORE_STAGES.length} core stages</summary><ol className="jg-stages">{CORE_STAGES.map(s => <li key={s.id}><a className="jg-head" href={href(s.pages[0].id)}><span className="sn">{s.n}</span><b>{s.title}</b></a><p>{s.blurb}</p><ul>{s.pages.map(p => <li key={p.id}><a href={href(p.id)}>{p.title}</a></li>)}</ul></li>)}</ol></details>
+    <p className="small muted">Available from every page: <a href="#/graph">Explore connections</a> shows how any step, system, decision, dataset or team relates to the rest of the blueprint, and the <a href="#/glossary">Glossary</a> defines the terms used throughout.</p>
     <p className="small muted">Optional extension: <a href="#/marketmaking/model">Market Making</a> explores a separate business and is outside the core reading sequence.</p>
   </section>
 }
