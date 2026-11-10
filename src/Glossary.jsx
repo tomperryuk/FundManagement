@@ -5,12 +5,12 @@ import { withoutGlossary } from './gloss/transform.js'
 
 const categories = ['All areas', ...new Set(terms.map(([category]) => category))]
 
-export default function Glossary() {
-  return withoutGlossary(() => GlossaryPage())
+export default function Glossary({ term = '' }) {
+  return withoutGlossary(() => GlossaryPage({ term }))
 }
 
-function GlossaryPage() {
-  const [query, setQuery] = useState('')
+function GlossaryPage({ term }) {
+  const [query, setQuery] = useState(() => { try { return decodeURIComponent(term || '') } catch { return '' } })
   const [category, setCategory] = useState('All areas')
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()

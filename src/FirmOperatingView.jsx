@@ -1,3 +1,4 @@
+import { CHECKED } from './freshness.js'
 import {
   evidenceStates, estateBaseline, teamLifecycle, capitalCycle, decisionRights,
   entityRelationships, failurePlaybooks, costModel, collaborationPolicy,
@@ -26,7 +27,7 @@ export default function FirmOperatingView({ part = 'baseline' }) {
 
     {part === 'baseline' && <>
       <h3 className="sec-title">Actual setup versus proposed design</h3>
-      <p className="muted">Establish one evidence-backed inventory before selecting or replacing systems. Record the item, scope, status, owner, dated evidence, review date, dependency and retain/integrate/replace decision. Public facts below were checked against primary sources on 18 Oct 2026.</p>
+      <p className="muted">Establish one evidence-backed inventory before selecting or replacing systems. Record the item, scope, status, owner, dated evidence, review date, dependency and retain/integrate/replace decision. Public facts below were checked against primary sources on {CHECKED}.</p>
       <div className="operating-cards">{evidenceStates.map(([name, meaning]) => <article key={name}><span className={'evidence ' + statusClass(name)}>{name}</span><p>{meaning}</p></article>)}</div>
       <div className="operating-baseline">{estateBaseline.map(([area, status, known, owner, evidence, url]) => <article key={area}>
         <header><h4>{area}</h4><span className={'evidence ' + statusClass(status)}>{status}</span></header>

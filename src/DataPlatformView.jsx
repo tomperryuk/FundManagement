@@ -1,3 +1,4 @@
+import { CHECKED } from './freshness.js'
 import { useState } from 'react'
 import FlowDiagram from './FlowDiagram.jsx'
 import { blueprintFlow, blueprintSources, platformCapabilities, implementationApproaches, platformDeliveryGates, productContract } from './dataPlatformBlueprint.js'
@@ -85,6 +86,6 @@ export default function DataPlatformView({ part = 'overview', component }) {
       <p className="small">Acceptance measures: <a href="#/lifecycle/metrics">business-wide success measures</a>. Operating ownership: <a href="#/operating/services">service catalogue</a>. Failure response: <a href="#/operating/resilience">recovery playbooks</a>. Detailed team isolation: <a href="#/data/teams">team workspaces</a>.</p>
     </>}
 
-    <details className="blueprint-sources"><summary>Primary technical references · checked 18 Oct 2026</summary><p className="small muted">These references support product capabilities. The blueprint’s preferred combinations and trade-offs are design recommendations; exact editions, regions, integration support and licence rights require diligence.</p><ul>{blueprintSources.map(([name, url]) => <li key={url}><a href={url} target="_blank" rel="noreferrer">{name} ↗</a></li>)}</ul></details>
+    <details className="blueprint-sources"><summary>Primary technical references · checked {CHECKED}</summary><p className="small muted">These references support product capabilities. The blueprint’s preferred combinations and trade-offs are design recommendations; exact editions, regions, integration support and licence rights require diligence.</p><ul>{blueprintSources.map(([name, url]) => <li key={url}><a href={url} target="_blank" rel="noreferrer">{name} ↗</a></li>)}</ul></details>
   </section>
 }

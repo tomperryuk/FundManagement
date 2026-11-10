@@ -39,8 +39,8 @@ export const valueSteps = [
     question: 'Can researchers find approved data, test ideas point-in-time and promote them with an owner and rollback?',
     owner: 'Strategy heads · research product owner · CDO',
     nodes: ['alt', 'ref', 'md', 'lake', 'secmaster', 'mdhub', 'research'],
-    enablers: [['Data platform blueprint', '#/data-blueprint/overview'], ['Key datasets', '#/datasets'], ['Ontology & AI', '#/ai/context'], ['Data modelling perspectives', '#/perspectives/vault']],
-    measure: 'Reproducible approved signals ÷ expected; point-in-time data coverage; hypothesis-to-approval time.',
+    enablers: [['Data platform: components & delivery', '#/data-blueprint/overview'], ['Key datasets', '#/datasets'], ['Ontology & AI', '#/ai/context'], ['Data modelling perspectives', '#/perspectives/vault']],
+    measure: 'Share of expected signals that are approved and reproducible; point-in-time data coverage; hypothesis-to-approval time.',
     evidence: 'proposed', evidenceNote: 'Data providers, contracts and research tooling are candidates; existing licences and usage rights need confirmation.',
     gate: 1,
     gap: 'Existing data licences, research environments and point-in-time practice are not inventoried.',
@@ -144,6 +144,6 @@ export const roles = [
   { name: 'Operations (COO)', does: 'Allocations, confirms, settlement, breaks and onboarding.', steps: ['teams', 'settle', 'nav'], pages: [['Team lifecycle', '#/operating/teams'], ['Failure & recovery', '#/operating/resilience'], ['Service catalogue', '#/operating/services']] },
   { name: 'Finance (CFO)', does: 'Valuation, NAV, fees, expenses and the cost of the platform.', steps: ['nav', 'capital', 'review'], pages: [['Economics & costs', '#/operating/economics'], ['Funds & counterparties', '#/operating/entities'], ['Daily NAV', '#/map']] },
   { name: 'Treasury', does: 'Cash, margin, financing and payments.', steps: ['settle', 'capital'], pages: [['Treasury', '#/treasury/role'], ['Daily cycle', '#/treasury/cycle'], ['Liquidity & financing', '#/treasury/liquidity']] },
-  { name: 'Technology & data', does: 'Builds and runs the components, data products and controls.', steps: ['research', 'trade', 'settle', 'teams'], pages: [['Platform map', '#/map'], ['Data platform blueprint', '#/data-blueprint/overview'], ['Technology stack', '#/stack/layers'], ['Ownership', '#/org/ownership']] },
+  { name: 'Technology & data', does: 'Builds and runs the components, data products and controls.', steps: ['research', 'trade', 'settle', 'teams'], pages: [['Platform map', '#/map'], ['Data platform: components & delivery', '#/data-blueprint/overview'], ['Technology stack', '#/stack/layers'], ['Ownership', '#/org/ownership']] },
   { name: 'CIO / leadership', does: 'Allocates capital, accepts trade-offs and sets delivery priorities.', steps: ['capital', 'teams', 'review'], pages: [['Value chain', '#/valuechain/steps'], ['Decision register', '#/register'], ['Roadmap', '#/roadmap']] },
 ]
