@@ -1,3 +1,4 @@
+import { CHECKED } from './freshness.js'
 import { useState } from 'react'
 import FlowDiagram from './FlowDiagram.jsx'
 import {
@@ -109,6 +110,6 @@ export default function SchemaContractsView({ part = 'design' }) {
       <p className="small">Local starter artefacts are kept in <code>contracts/</code> in the project source. They require implementation of the compiler/rule adapters, native compilation/compatibility checks, actual warehouse builds, source integration and consumer acceptance before activation.</p>
     </>}
 
-    <details className="blueprint-sources"><summary>Primary implementation references · checked 18 Oct 2026</summary><ul>{contractSources.map(([name, url]) => <li key={url}><a href={url} target="_blank" rel="noreferrer">{name} ↗</a></li>)}</ul></details>
+    <details className="blueprint-sources"><summary>Primary implementation references · checked {CHECKED}</summary><ul>{contractSources.map(([name, url]) => <li key={url}><a href={url} target="_blank" rel="noreferrer">{name} ↗</a></li>)}</ul></details>
   </section>
 }

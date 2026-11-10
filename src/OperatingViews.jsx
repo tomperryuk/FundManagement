@@ -111,7 +111,26 @@ export function BusinessFit({ part } = {}) {
 
 // ───────────────────────── Trade lifecycle ─────────────────────────
 
+// Wide screens show the selected stage inline; phones keep it in a dialog.
+function useWide() {
+  const q = '(min-width: 901px)'
+  const [wide, setWide] = useState(() => window.matchMedia?.(q).matches ?? true)
+  useEffect(() => {
+    const m = window.matchMedia?.(q)
+    if (!m) return
+    const on = () => setWide(m.matches)
+    m.addEventListener('change', on)
+    return () => m.removeEventListener('change', on)
+  }, [])
+  return wide
+}
+
+function StageShell({ inline, open, onClose, label, children }) {
+  return inline ? <div className="lc-inline" aria-label={label} role="region">{children}</div> : <Modal open={open} onClose={onClose} label={label}>{children}</Modal>
+}
+
 export function Lifecycle({ part } = {}) {
+  const inline = useWide()
   const show = (k) => !part || part === k
   const [i, setI] = useState(0)
   const [open, setOpen] = useState(false)
@@ -148,8 +167,8 @@ export function Lifecycle({ part } = {}) {
         ))}
       </div>
 
-      <p className="hint-tap">Select a stage to open its full detail.</p>
-      <Modal open={open} onClose={() => setOpen(false)} label={`Stage ${i + 1}: ${s.step}`}>
+      {!inline && <p className="hint-tap">Select a stage to open its full detail.</p>}
+      <StageShell inline={inline} open={open} onClose={() => setOpen(false)} label={`Stage ${i + 1}: ${s.step}`}>
       <article className="lc-detail">
         <header className="lc-head">
           <div>
@@ -208,7 +227,7 @@ export function Lifecycle({ part } = {}) {
           <button disabled={i === lifecycle.length - 1} onClick={() => setI(i + 1)}>{i < lifecycle.length - 1 ? lifecycle[i + 1].step : 'Next'} →</button>
         </div>
       </article>
-      </Modal>
+      </StageShell>
       </>)}
 
       {show('day') && (<>

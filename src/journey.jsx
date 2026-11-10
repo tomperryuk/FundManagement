@@ -1,6 +1,7 @@
 // The reading journey: four core stages and an optional extension, each with a few pages; long pages are split
 // into parts so each screen covers one topic. Routes are #/<page>[/<part-or-arg>].
-import ArchitectureOverview, { Workflows } from './ArchitectureOverview.jsx'
+import ArchitectureOverview, { Workflows, Glance } from './ArchitectureOverview.jsx'
+import ValidationView from './ValidationView.jsx'
 import SystemMap from './SystemMap.jsx'
 import DecisionRegister from './DecisionRegister.jsx'
 import DataArchitecture from './DataArchitecture.jsx'
@@ -24,10 +25,11 @@ import ValueChainView from './ValueChain.jsx'
 import { lazy, Suspense } from 'react'
 const GraphView = lazy(() => import('./GraphView.jsx'))
 import SignalView from './SignalView.jsx'
+import { getProgress, clearProgress } from './progress.js'
 
 export const STAGES = [
   {
-    id: 'context', n: 1, title: 'Understand the business', blurb: 'The value chain, what the platform must do and why it is shaped this way',
+    id: 'context', short: 'Business', n: 1, title: 'Understand the business', blurb: 'The value chain, what the platform must do and why it is shaped this way',
     pages: [
       { id: 'overview', title: 'Overview', own: true, render: () => <ArchitectureOverview guide={<JourneyGuide />} /> },
       {
@@ -49,6 +51,11 @@ export const STAGES = [
         render: part => <FirmOperatingView part={part} />,
       },
       {
+        id: 'validate', title: 'What needs validation',
+        summary: 'Every unknown that must be confirmed internally, with its evidence owner and the delivery gate it blocks. Filter by owner to build a checklist for a meeting.',
+        render: () => <ValidationView />,
+      },
+      {
         id: 'principles', title: 'Design principles',
         summary: 'Seventeen principles: five that come from the business model, then the architecture, control and operating rules that make them hold.',
         parts: principleGroups.map(([id, name]) => [id, name]),
@@ -57,8 +64,14 @@ export const STAGES = [
     ],
   },
   {
-    id: 'architecture', n: 2, title: 'See the design', blurb: 'The systems, how they connect, and how work moves through them',
+    id: 'architecture', short: 'Design', n: 2, title: 'See the design', blurb: 'The systems, how they connect, and how work moves through them',
     pages: [
+      {
+        id: 'glance', title: 'Architecture at a glance',
+        summary: 'The layers of the platform and its shared foundation, where to buy, build or integrate, and the decisions to resolve first.',
+        parts: [['layers', 'Layers & foundation'], ['approach', 'Buy, build & integrate'], ['first', 'Decisions to resolve first']],
+        render: part => <Glance part={part} />,
+      },
       { id: 'workflows', title: 'Research & trading workflows', summary: 'Follow the work, the control gates and the hand-offs between investment teams and the shared platform.', parts: [['research', 'Research journey'], ['trading', 'Trading journey']], render: part => <Workflows part={part} /> },
       {
         id: 'signal', title: 'What is a signal',
@@ -88,10 +101,10 @@ export const STAGES = [
     ],
   },
   {
-    id: 'data', n: 3, title: 'Data & AI enablers', blurb: 'What the early steps of the value chain depend on: data, ontology, modelling and AI',
+    id: 'data', short: 'Data & AI', n: 3, title: 'Data & AI enablers', blurb: 'What the early steps of the value chain depend on: data, ontology, modelling and AI',
     pages: [
       {
-        id: 'data-blueprint', title: 'Data platform blueprint',
+        id: 'data-blueprint', title: 'Data platform: components & delivery', related: [['Data platform: paths, history & serving', '#/data/platform'], ['Key datasets', '#/datasets'], ['Schema contracts', '#/contracts/design']],
         summary: 'A capability-to-component blueprint with candidate technologies, interface contracts, accountable owners, trade-offs and delivery gates across operational, live, tick and analytical workloads.',
         parts: [['overview', 'Target blueprint'], ['components', 'Capabilities & components'], ['options', 'Implementation approaches'], ['delivery', 'Delivery & operation']],
         render: (part, component) => <DataPlatformView part={part} component={component} />,
@@ -103,7 +116,7 @@ export const STAGES = [
         render: part => <SchemaContractsView part={part} />,
       },
       {
-        id: 'data', title: 'Data platform',
+        id: 'data', title: 'Data platform: paths, history & serving', related: [['Data platform: components & delivery', '#/data-blueprint/overview'], ['Key datasets', '#/datasets']],
         summary: 'Four paths for four speeds of data, how history and corrections are kept point-in-time, and how team workspaces sit on shared services. Snowflake is the proposed governed analytical platform, never the trading system of record. Technologies and service levels are candidates to validate against the current estate.',
         parts: [['platform', 'Four data paths'], ['snowflake', 'Where Snowflake sits'], ['modelling', 'Modelling approach'], ['pit', 'Point-in-time & corrections'], ['teams', 'Team workspaces'], ['serving', 'Serving by use case'], ['vendors', 'Vendor landscape']],
         render: (part) => <DataArchitecture part={part} />,
@@ -130,7 +143,7 @@ export const STAGES = [
     ],
   },
   {
-    id: 'deliver', n: 4, title: 'Choose & deliver', blurb: 'Sourcing, technology, organisation, open decisions and the delivery sequence',
+    id: 'deliver', short: 'Deliver', n: 4, title: 'Choose & deliver', blurb: 'Sourcing, technology, organisation, open decisions and the delivery sequence',
     pages: [
       {
         id: 'options', title: 'Sourcing options',
@@ -155,7 +168,7 @@ export const STAGES = [
     ],
   },
   {
-    id: 'extend', n: 5, optional: true, title: 'Optional extension', blurb: 'Diversifying into new businesses on the same platform',
+    id: 'extend', short: 'Extend', n: 5, optional: true, title: 'Optional extension', blurb: 'Diversifying into new businesses on the same platform',
     pages: [
       {
         id: 'marketmaking', title: 'Market making',
@@ -171,7 +184,7 @@ export const CORE_STAGES = STAGES.filter(s => !s.optional)
 
 // Site-wide tools that cut across every stage. Reachable from the masthead and Contents, outside the reading order.
 export const TOOLS = { id: 'tools', tool: true, title: 'Tools', pages: [
-  { id: 'glossary', title: 'Research & trading glossary', short: 'Glossary', summary: 'Search clear, workflow-specific definitions for the research, portfolio, trading, post-trade, data and technology terms used throughout this blueprint.', render: () => <Glossary /> },
+  { id: 'glossary', title: 'Research & trading glossary', short: 'Glossary', summary: 'Search clear, workflow-specific definitions for the research, portfolio, trading, post-trade, data and technology terms used throughout this blueprint.', render: (_, term) => <Glossary key={term || ''} term={term} /> },
   { id: 'graph', title: 'Explore connections', short: '◎ Explore connections', wide: true, summary: 'Pick any step, system, decision, dataset or team to see what it is connected to, and how two things relate.', render: (_, node) => <Suspense fallback={<p role="status" className="muted">Loading connections…</p>}><GraphView node={node} /></Suspense> },
 ] }
 
@@ -184,7 +197,7 @@ export const STEPS = PAGES.filter(p => !p.stage.tool).flatMap((p) => (p.parts ? 
 export const href = (page, part) => `#/${page}${part ? '/' + part : ''}`
 
 // Old links from earlier versions of the site.
-const LEGACY_HASH = { '#security-master': '#/secmaster', '#alternative-data': '#/altdata', '#risk-platform': '#/fit/risk', '#photon': '#/fit/risk' }
+const LEGACY_HASH = { '#security-master': '#/secmaster', '#alternative-data': '#/altdata', '#risk-platform': '#/fit/risk', '#photon': '#/fit/risk', '#open-questions': '#/glance/first' }
 const LEGACY_TAB = { overview: 'overview', fit: 'fit', data: 'data', register: 'register', lifecycle: 'lifecycle', principles: 'principles', options: 'options', stack: 'stack' }
 
 export function legacyRedirect() {
@@ -211,17 +224,26 @@ export function parseRoute(hash) {
 }
 
 export const READING_PATHS = {
-  leadership: { title: 'Leadership', detail: 'Understand the proposal, validate the operating setup, review capital decisions and agree delivery priorities.', stops: [['overview'], ['valuechain', 'steps'], ['valuechain', 'measures'], ['operating', 'baseline'], ['operating', 'capital'], ['options', 'strategies'], ['register'], ['valuechain', 'gates'], ['roadmap']] },
+  leadership: { title: 'Leadership', detail: 'Understand the proposal, validate the operating setup, review capital decisions and agree delivery priorities.', stops: [['overview'], ['valuechain', 'steps'], ['valuechain', 'measures'], ['operating', 'baseline'], ['validate'], ['operating', 'capital'], ['options', 'strategies'], ['register'], ['valuechain', 'gates'], ['roadmap']] },
   investment: { title: 'Investment teams', detail: 'Follow research into trading, validate team readiness and strategy needs, then review outcomes and worked scenarios.', stops: [['valuechain', 'roles'], ['workflows', 'research'], ['workflows', 'trading'], ['operating', 'teams'], ['fit', 'groups'], ['lifecycle', 'stages'], ['lifecycle', 'metrics'], ['operating', 'scenarios'], ['glossary'], ['register']] },
   technology: { title: 'Technology & controls', detail: 'Explore platform capabilities, component choices, schema contracts, data controls, service ownership and recovery before agreeing delivery.', stops: [['valuechain', 'steps'], ['map'], ['data-blueprint', 'overview'], ['data-blueprint', 'components'], ['contracts', 'design'], ['data', 'platform'], ['data', 'pit'], ['data', 'teams'], ['datasets'], ['ai', 'context'], ['operating', 'services'], ['operating', 'resilience'], ['lifecycle', 'metrics'], ['org', 'ownership'], ['register'], ['roadmap']] },
 }
 export const pathSteps = key => READING_PATHS[key]?.stops.map(([id, part]) => ({ page: pageById[id], part: part || null, title: pageById[id].parts?.find(([k]) => k === part)?.[1] || pageById[id].title }))
+
+function ContinueReading() {
+  const { last, seen } = getProgress()
+  const p = last && pageById[last.page]
+  if (!p || p.id === 'overview') return null
+  const partTitle = last.part && p.parts?.find(([id]) => id === last.part)?.[1]
+  return <p className="continue"><a className="primary-link" href={href(p.id, last.part)}>Continue where you left off: {p.title}{partTitle ? ` · ${partTitle}` : ''} →</a> <span className="small muted">{seen.length} of {PAGES.length} pages visited · </span><button type="button" className="link small" onClick={() => { clearProgress(); window.location.reload() }}>Clear</button></p>
+}
 
 function JourneyGuide() {
   const selected = new URLSearchParams(window.location.search).get('journey')
   if (Object.hasOwn(READING_PATHS, selected)) return <p className="outcome"><b>Start with the proposal below.</b> Use Next to continue through your selected path, or open a supporting detail and return using the path links above.</p>
   return <section className="journey-guide start-guide">
     <h3>Start with your task</h3>
+    <ContinueReading />
     <p>Choose a guided path, or use Contents to browse the four core stages.</p>
     <div className="start-paths">{Object.entries(READING_PATHS).map(([key, path]) => <article key={key}><h4>{path.title}</h4><p>{path.detail}</p><span>{path.stops.length} topics</span><a className="primary-link" href={`?journey=${key}${href(...path.stops[0])}`}>Start this path →</a></article>)}</div>
     <details className="core-outline"><summary>Browse the complete blueprint · {CORE_STAGES.length} core stages</summary><ol className="jg-stages">{CORE_STAGES.map(s => <li key={s.id}><a className="jg-head" href={href(s.pages[0].id)}><span className="sn">{s.n}</span><b>{s.title}</b></a><p>{s.blurb}</p><ul>{s.pages.map(p => <li key={p.id}><a href={href(p.id)}>{p.title}</a></li>)}</ul></li>)}</ol></details>

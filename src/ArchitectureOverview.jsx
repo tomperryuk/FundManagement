@@ -63,34 +63,18 @@ export default function ArchitectureOverview({ guide }) {
       <div className="arch-evidence">
         <article><span className="evidence fact">Publicly stated</span><b>Verition context</b><p>Four named strategy groups; collaboration across investment teams; dynamic capital allocation; internal and external risk controls; Northern Trust investor portal link.</p><a href="https://www.verition.com/" target="_blank" rel="noreferrer">Verition company profile ↗</a></article>
         <article><span className="evidence inference">Design response</span><b>Architecture pattern</b><p>Shared research and data services with precise access walls; common trade / position interfaces; specialist execution and risk paths by asset class.</p><span>Proposed here; validate with stakeholders.</span></article>
-        <article><span className="evidence confirm">Confirm internally</span><b>Current estate & constraints</b><p>Existing OMS / EMS / PMS, Photon scope, administrator and PB interfaces, legal-entity perimeter, cloud / residency, latency needs, data rights and operating ownership.</p><a href="#/operating/baseline">Review actual versus proposed setup →</a></article>
+        <article><span className="evidence confirm">Confirm internally</span><b>Current estate & constraints</b><p>Existing OMS / EMS / PMS, Photon scope, administrator and PB interfaces, legal-entity perimeter, cloud / residency, latency needs, data rights and operating ownership.</p><a href="#/validate">See everything that needs validation →</a></article>
       </div>
 
-      <h3 className="sec-title">Architecture at a glance</h3>
-      <p className="muted small">Each investment team uses the same governed core. Asset-class specialists plug into the edges where their workflow requires it.</p>
-      <div className="arch-flow">
-        {layers.map(([name, users, detail], i) => <article key={name} className="arch-layer" style={{ '--c': Object.values(domains)[i % Object.values(domains).length].color }}>
-          <span className="arch-index">0{i + 1}</span><div><h4>{name}</h4><b>{users}</b><p>{detail}</p></div>
-        </article>)}
+      <h3 className="sec-title">Go deeper</h3>
+      <div className="operating-cards go-deeper">
+        <article><h4>Architecture at a glance</h4><p>The five layers of the platform, the shared foundation, where to buy, build or integrate, and the decisions to resolve first.</p><a href="#/glance/layers">Open the architecture overview →</a></article>
+        <article><h4>What needs validation</h4><p>Every item that is still an unknown, with its evidence owner and the delivery gate it blocks.</p><a href="#/validate">See what needs validation →</a></article>
+        <article><h4>Research & trading workflows</h4><p>The research and trading journeys, their hand-offs, control gates and feedback loops.</p><a href="#/workflows/research">Follow the work →</a></article>
+        <article><h4>Firm operating model</h4><p>Team onboarding, capital decisions, legal relationships, costs, services and recovery.</p><a href="#/operating/baseline">Explore how the firm operates →</a></article>
+        <article><h4>Data platform: components & delivery</h4><p>Capabilities, owned components, technology options and delivery gates across the four data paths.</p><a href="#/data-blueprint/overview">Explore the data platform →</a></article>
+        <article><h4>Platform map</h4><p>Components, interfaces and flows from idea to settlement, traced end to end.</p><a href="#/map">Open the platform map →</a></article>
       </div>
-      <div className="arch-foundation"><b>Shared foundation under every layer</b><span>Identity & entitlements · instrument / entity master · governed event contracts · analytical lakehouse · audit & observability · resilience & recovery</span></div>
-
-      <div className="workflow-teaser"><h3>Follow the work from research to realised outcomes</h3><p>See the research and trading journeys, their hand-offs, control gates and feedback loops.</p><a className="primary-link" href="#/workflows/research">Explore research & trading workflows →</a></div>
-      <div className="operating-cards"><article><h4>How the firm operates</h4><p>Team onboarding, capital decisions, legal relationships, costs, services and recovery, with worked examples and explicit evidence gaps.</p><a href="#/operating/baseline">Explore the firm operating model →</a></article><article><h4>How the data platform is assembled</h4><p>Capabilities, owned components, technology options and delivery gates across the four data paths.</p><a href="#/data-blueprint/overview">Explore the data platform blueprint →</a></article></div>
-
-      <h3 className="sec-title">Where to buy, build and integrate</h3>
-      <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Approach</th><th>Use it for</th><th>Trade-off / guardrail</th></tr></thead><tbody>
-        {choices.map(([approach, use, tradeoff]) => <tr key={approach}><th>{approach}</th><td>{use}</td><td>{tradeoff}</td></tr>)}
-      </tbody></table></div>
-
-      <h3 className="sec-title" id="open-questions">Architecture decisions to resolve first</h3>
-      <div className="open-decision-grid">
-        <article><b>1 · What is already in production?</b><p>Inventory PMS / OMS / EMS, accounting, risk, market data, administrator, PBs, contracts, owners and interfaces. Prefer retain / integrate / replace decisions by capability, not a platform-wide rip-and-replace.</p></article>
-        <article><b>2 · What does Photon cover?</b><p>Assess the reported licence against the four strategy groups: supported instruments, data feeds, latency, recovery, roadmap, commercial rights and operating ownership. Start with shadow comparisons; require risk-owner sign-off before production reliance.</p><a href="#/fit/risk">Read the Photon fit analysis →</a></article>
-        <article><b>3 · Where are the hard boundaries?</b><p>Agree investment-team confidentiality, MNPI / wall-crossing, fund and entity segregation, licensed data redistribution, regional residency, and who can override each control.</p></article>
-        <article><b>4 · Which workflows need special treatment?</b><p>Measure quant order rates and latency; instrument and counterparty mix; financing and collateral; primary-market allocation; NAV timing; external reporting obligations.</p></article>
-      </div>
-      <p className="arch-next">Use <a href="#/operating/baseline">Firm operating model</a> for responsibilities and evidence, <a href="#/map">Platform map</a> for interfaces, <a href="#/data-blueprint/overview">Data platform blueprint</a> for capabilities and technology choices, <a href="#/lifecycle/stages">Lifecycle & success measures</a> for controls and outcomes, and <a href="#/register">Decision register</a> for selected options.</p>
     </section>
   )
 }
@@ -108,5 +92,38 @@ export function Workflows({ part = 'research' }) {
     <h3 className="sec-title">Explore the supporting design</h3>
     <div className="workflow-links">{(research ? [['#/node/research', 'Research platform', 'Workbench, reproducibility, signal promotion and options.'], ['#/altdata', 'Alternative data', 'Approval, licensing, onboarding and point-in-time features.'], ['#/datasets', 'Governed datasets', 'Ownership, quality, history and serving.']] : [['#/lifecycle/stages', 'Detailed trade lifecycle', 'Twelve stages with owners, controls and exceptions.'], ['#/map', 'Platform map', 'Trace a trade from idea through settlement.'], ['#/node/recon', 'Reconciliation', 'Break ownership, resolution and independent records.']]).map(([url, title, detail]) => <a key={url} href={url}><b>{title} →</b><span>{detail}</span></a>)}</div>
     <details className="terms"><summary>Common terms in these workflows</summary><dl>{[['PMS', 'Portfolio management system: targets, sizing and portfolio construction.'], ['OMS', 'Order management system: the record of order state and allocation intent.'], ['EMS', 'Execution management system: broker, algorithm and venue execution.'], ['IBOR', 'Investment book of record: investment positions, cash and trade activity.'], ['MNPI', 'Material non-public information: subject to information walls and compliance controls.'], ['TCA', 'Transaction cost analysis: execution quality and realised trading costs.'], ['Point-in-time data', 'Data that reflects what was known at the research date, including its original release vintage.']].map(([term, meaning]) => <div key={term}><dt>{term}</dt><dd>{meaning}</dd></div>)}</dl></details>
+  </section>
+}
+
+// "Architecture at a glance": the layered view, buy / build / integrate guidance and the first decisions.
+export function Glance({ part = 'layers' }) {
+  return <section className="arch-overview glance">
+    {part === 'layers' && <>
+      <p className="muted small">Each investment team uses the same governed core. Asset-class specialists plug into the edges where their workflow requires it.</p>
+      <div className="arch-flow">
+        {layers.map(([name, users, detail], i) => <article key={name} className="arch-layer" style={{ '--c': Object.values(domains)[i % Object.values(domains).length].color }}>
+          <span className="arch-index">0{i + 1}</span><div><h4>{name}</h4><b>{users}</b><p>{detail}</p></div>
+        </article>)}
+      </div>
+      <div className="arch-foundation"><b>Shared foundation under every layer</b><span>Identity & entitlements · instrument / entity master · governed event contracts · analytical lakehouse · audit & observability · resilience & recovery</span></div>
+      <div className="workflow-teaser"><h3>Follow the work from research to realised outcomes</h3><p>See the research and trading journeys, their hand-offs, control gates and feedback loops.</p><a className="primary-link" href="#/workflows/research">Explore research & trading workflows →</a></div>
+      <div className="operating-cards"><article><h4>How the firm operates</h4><p>Team onboarding, capital decisions, legal relationships, costs, services and recovery, with worked examples and explicit evidence gaps.</p><a href="#/operating/baseline">Explore the firm operating model →</a></article><article><h4>How the data platform is assembled</h4><p>Capabilities, owned components, technology options and delivery gates across the four data paths.</p><a href="#/data-blueprint/overview">Explore the data platform blueprint →</a></article></div>
+    </>}
+    {part === 'approach' && <>
+      <p className="muted small">Where to use vendor products, where to own the integration, and what to treat as a hypothesis until tested.</p>
+      <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Approach</th><th>Use it for</th><th>Trade-off / guardrail</th></tr></thead><tbody>
+        {choices.map(([approach, use, tradeoff]) => <tr key={approach}><th>{approach}</th><td>{use}</td><td>{tradeoff}</td></tr>)}
+      </tbody></table></div>
+
+    </>}
+    {part === 'first' && <>
+      <p className="muted small">Four questions to answer before committing to components or vendors.</p>
+      <div className="open-decision-grid">
+        <article><b>1 · What is already in production?</b><p>Inventory PMS / OMS / EMS, accounting, risk, market data, administrator, PBs, contracts, owners and interfaces. Prefer retain / integrate / replace decisions by capability, not a platform-wide rip-and-replace.</p></article>
+        <article><b>2 · What does Photon cover?</b><p>Assess the reported licence against the four strategy groups: supported instruments, data feeds, latency, recovery, roadmap, commercial rights and operating ownership. Start with shadow comparisons; require risk-owner sign-off before production reliance.</p><a href="#/fit/risk">Read the Photon fit analysis →</a></article>
+        <article><b>3 · Where are the hard boundaries?</b><p>Agree investment-team confidentiality, MNPI / wall-crossing, fund and entity segregation, licensed data redistribution, regional residency, and who can override each control.</p></article>
+        <article><b>4 · Which workflows need special treatment?</b><p>Measure quant order rates and latency; instrument and counterparty mix; financing and collateral; primary-market allocation; NAV timing; external reporting obligations.</p></article>
+      </div>
+    </>}
   </section>
 }

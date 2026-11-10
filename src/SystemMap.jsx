@@ -142,46 +142,19 @@ function MapView({ flowId, setFlowId, step, setStep, kinds, setKinds, sel, setSe
         </dl>
       </div>
 
-      <div className="map-help"><b>Explore components or trace a workflow.</b><span>In the diagram, select a box to inspect it, then use “Open detailed design”. Keyboard: focus a component and press Enter to open its design.</span></div>
-      <div className="toolbar-group view-switch"><span className="toolbar-label">Explore as</span>{[['diagram', 'Diagram'], ['list', 'Searchable component list']].map(([id, label]) => <button key={id} className={'chip' + (mapMode === id ? ' on' : '')} aria-pressed={mapMode === id} onClick={() => setMapMode(id)}>{label}</button>)}</div>
-      {mapMode === 'diagram' && <div className="toolbar">
-        <div className="toolbar-group">
-          <span className="toolbar-label">Trace a flow</span>
-          <div className="chips">
-            {flows.map((f) => (
-              <button key={f.id} className={'chip' + (f.id === flowId ? ' on' : '')} aria-pressed={f.id === flowId} onClick={() => pickFlow(f.id)}>
-                {f.name}
-              </button>
-            ))}
-          </div>
-        </div>
-        {!flow && <div className="toolbar-group">
-          <span className="toolbar-label">Value-chain step</span>
-          <div className="chips">
-            {valueSteps.map((v) => (
-              <button key={v.id} className={'chip' + (v.id === stepId ? ' on' : '')} aria-pressed={v.id === stepId} onClick={() => { setStepId(v.id === stepId ? null : v.id); setSel(null) }}>{v.n} · {v.name}</button>
-            ))}
-          </div>
-        </div>}
-        <div className="toolbar-group">
-          <span className="toolbar-label">Verition context</span>
-          <button className={'chip' + (showPhoton ? ' on' : '')} aria-pressed={showPhoton} onClick={() => { setShowPhoton(!showPhoton); setSel(null) }}>
-            Photon integration candidates
-          </button>
-          <a className="primary-link" href="#/fit/risk">Photon detail →</a>
-        </div>
-        {!flow && (
-          <div className="toolbar-group">
-            <span className="toolbar-label">Show interfaces</span>
-            <div className="chips">
-              {KIND_IDS.map((k) => (
-                <button key={k} className={'chip kind' + (kinds.has(k) ? ' on' : '')} aria-pressed={kinds.has(k)} onClick={() => toggleKind(k)} style={{ '--k': edgeKinds[k].color }}>
-                  <i />{edgeKinds[k].name}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+      <p className="map-help small">Select a box to inspect it, then use “Open detailed design”. Keyboard: focus a component and press Enter.</p>
+      <div className="map-bar">
+        <div className="seg" role="group" aria-label="Explore as">{[['diagram', 'Diagram'], ['list', 'Component list']].map(([id, label]) => <button key={id} className={mapMode === id ? 'on' : ''} aria-pressed={mapMode === id} onClick={() => setMapMode(id)}>{label}</button>)}</div>
+        {mapMode === 'diagram' && <>
+          <label className="map-select">Trace a flow<select value={flowId || ''} onChange={e => { const id = e.target.value; if (id) { if (id !== flowId) pickFlow(id) } else if (flowId) pickFlow(flowId) }}><option value="">None</option>{flows.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}</select></label>
+          {!flow && <label className="map-select">Value-chain step<select value={stepId || ''} onChange={e => { setStepId(e.target.value || null); setSel(null) }}><option value="">All steps</option>{valueSteps.map(v => <option key={v.id} value={v.id}>{v.n} · {v.name}</option>)}</select></label>}
+          <button className={'chip' + (showPhoton ? ' on' : '')} aria-pressed={showPhoton} onClick={() => { setShowPhoton(!showPhoton); setSel(null) }}>Photon candidates</button>
+          <a className="primary-link small" href="#/fit/risk">Photon detail →</a>
+        </>}
+      </div>
+      {mapMode === 'diagram' && !flow && <div className="map-bar map-kinds" role="group" aria-label="Show interfaces">
+        <span className="toolbar-label">Interfaces</span>
+        <div className="chips">{KIND_IDS.map((k) => <button key={k} className={'chip kind' + (kinds.has(k) ? ' on' : '')} aria-pressed={kinds.has(k)} onClick={() => toggleKind(k)} style={{ '--k': edgeKinds[k].color }}><i />{edgeKinds[k].name}</button>)}</div>
       </div>}
 
       {mapMode === 'list' && <section className="component-directory" aria-label="Component directory"><div className="directory-tools"><label>Find a component<input type="search" value={componentQuery} onChange={e => setComponentQuery(e.target.value)} placeholder="Search by name or responsibility…" /></label><label>Area<select value={componentArea} onChange={e => setComponentArea(e.target.value)}><option value="all">All areas</option>{Object.entries(domains).map(([id, d]) => <option key={id} value={id}>{d.name}</option>)}</select></label></div><p role="status">{listedNodes.length} components and external parties shown.</p><div className="directory-grid">{listedNodes.map(n => <article key={n.id} style={{ '--c': domains[n.domain].color }}><span className="eyebrow">{domains[n.domain].name}</span><h3>{n.label}</h3><p>{n.summary}</p><a href={`#/node/${n.id}`}>Open detailed design & interfaces →</a></article>)}</div>{!listedNodes.length && <p>No components match. <button className="link" onClick={() => { setComponentQuery(''); setComponentArea('all') }}>Clear search and area</button></p>}</section>}

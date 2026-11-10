@@ -14,7 +14,7 @@ export default function Roadmap() {
             <span className="tag">{r.phase}</span>
             <h3>{r.title}</h3>
             <ul>{r.items.map((x) => <li key={x}>{x}</li>)}</ul>
-            <div className="gate-unlocks"><b>Unlocks along the value chain</b><ul>{gateUnlocks[i].map(([id, what]) => <li key={id}><StepChip id={id} /> {what}</li>)}</ul></div>
+            <div className="gate-unlocks"><b>Unlocks along the value chain</b><ul>{gateUnlocks[i].map(([id, what]) => <li key={id}><StepChip id={id} /><span>{what}</span></li>)}</ul></div>
           </article>
         ))}
       </div>
